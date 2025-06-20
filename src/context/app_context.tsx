@@ -1,6 +1,5 @@
-import { createContext, useEffect, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 import { useIntl } from "react-intl";
-import type { ImageType } from "src/api";
 import { getRemainingCredits } from "src/api";
 import { ContextMessages as Messages } from "./context.messages";
 
@@ -11,8 +10,7 @@ export interface AppContextType {
   setCreditsError: (value: string) => void;
   loadingApp: boolean;
   setLoadingApp: (value: boolean) => void;
-  isLoadingImages: boolean;
-  setIsLoadingImages: (value: boolean) => void;
+
   jobId: string;
   setJobId: (value: string) => void;
   remainingCredits: number;
@@ -21,8 +19,9 @@ export interface AppContextType {
   setPromptInput: (value: string) => void;
   promptInputError: string;
   setPromptInputError: (value: string) => void;
-  generatedImages: ImageType[];
-  setGeneratedImages: (value: ImageType[]) => void;
+
+  generatedCode: string;
+  setGeneratedCode: (value: string) => void;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -32,8 +31,7 @@ export const AppContext = createContext<AppContextType>({
   setCreditsError: () => {},
   loadingApp: true,
   setLoadingApp: () => {},
-  isLoadingImages: false,
-  setIsLoadingImages: () => {},
+
   jobId: "",
   setJobId: () => {},
   remainingCredits: 0,
@@ -42,8 +40,9 @@ export const AppContext = createContext<AppContextType>({
   setPromptInput: () => {},
   promptInputError: "",
   setPromptInputError: () => {},
-  generatedImages: [] as ImageType[],
-  setGeneratedImages: () => {},
+
+  generatedCode: "",
+  setGeneratedCode: () => {},
 });
 
 /**
@@ -63,12 +62,13 @@ export const ContextProvider = ({
 }): JSX.Element => {
   const [appError, setAppError] = useState<string>("");
   const [loadingApp, setLoadingApp] = useState<boolean>(true); // set to true to prevent ui flash on load
-  const [isLoadingImages, setIsLoadingImages] = useState<boolean>(false);
+
   const [jobId, setJobId] = useState<string>("");
   const [remainingCredits, setRemainingCredits] = useState<number>(0);
   const [promptInput, setPromptInput] = useState<string>("");
   const [promptInputError, setPromptInputError] = useState<string>("");
-  const [generatedImages, setGeneratedImages] = useState<ImageType[]>([]);
+
+  const [generatedCode, setGeneratedCode] = useState<string>("");
   const [creditsError, setCreditsError] = useState<string>("");
   const intl = useIntl();
 
@@ -134,8 +134,7 @@ export const ContextProvider = ({
     setCreditsError,
     loadingApp,
     setLoadingApp,
-    isLoadingImages,
-    setIsLoadingImages,
+
     jobId,
     setJobId,
     remainingCredits,
@@ -144,8 +143,9 @@ export const ContextProvider = ({
     setPromptInput: setPromptInputHandler,
     promptInputError,
     setPromptInputError,
-    generatedImages,
-    setGeneratedImages,
+
+    generatedCode,
+    setGeneratedCode,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

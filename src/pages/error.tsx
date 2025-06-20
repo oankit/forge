@@ -10,12 +10,12 @@ import { FormattedMessage, useIntl } from "react-intl";
  */
 export const ErrorPage = () => {
   const navigate = useNavigate();
-  const { setPromptInput, setIsLoadingImages } = useAppContext();
+  const { setPromptInput } = useAppContext();
   const intl = useIntl();
 
   const onClick = () => {
     setPromptInput("");
-    setIsLoadingImages(false);
+
     navigate(Paths.HOME);
   };
 

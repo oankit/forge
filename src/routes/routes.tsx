@@ -1,9 +1,9 @@
 import { Home } from "src/home";
-import { ErrorPage, GeneratePage, ResultsPage } from "src/pages";
+import { ErrorPage, GeneratePage } from "src/pages";
 
 export enum Paths {
   HOME = "/",
-  RESULTS = "/results",
+
 }
 
 export const routes = [
@@ -16,10 +16,7 @@ export const routes = [
         index: true,
         element: <GeneratePage />,
       },
-      {
-        path: Paths.RESULTS,
-        element: <ResultsPage />,
-      },
+  
       // @TODO: Add additional pages and routes as needed.
     ],
   },

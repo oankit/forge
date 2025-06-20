@@ -1,9 +1,45 @@
 {
-  "servers": {
-    "canva": {
+  "mcpServers": {
+    "Canva": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@canva/cli@latest", "mcp"]
+      "args": [
+        "-y",
+        "@canva/cli@latest",
+        "mcp"
+      ]
+    },
+    "GitHub": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      },
+      "fromGalleryId": "modelcontextprotocol.servers_github"
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "env": {
+        "DEFAULT_MINIMUM_TOKENS": "10000"
+      },
+      "fromGalleryId": "upstash.context7"
+    },
+    "vercel-ai-docs": {
+      "command": "node",  
+      "args": [
+        "Documents/AI/MCP/vercel-ai-docs-mcp/dist/main.js"
+      ],
+      "env": {
+        "GOOGLE_GENERATIVE_AI_API_KEY": "AIzaSyC69K0vL_o-bYvq55c2qG-i3ZLlLkO6lQU"
+      }
     }
+
   }
 }
