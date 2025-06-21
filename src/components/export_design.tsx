@@ -63,8 +63,19 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
       
       if (result.status === 'completed' && result.exportBlobs.length > 0) {
         console.log('[EXPORT] Design export completed successfully');
-        updateExportState({ progress: 50 });
-        return result.exportBlobs[0].url;
+        updateExportState({ progress: 40 });
+        
+        // Convert blob URL to base64 data URL
+        const blobUrl = result.exportBlobs[0].url;
+        const response = await fetch(blobUrl);
+        const blob = await response.blob();
+        
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
       } else {
         console.error('[EXPORT] Export was cancelled or failed');
         throw new Error('Export was cancelled or failed');
@@ -77,27 +88,35 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
   const generateCodeFromImage = async (imageUrl: string, prompt: string): Promise<string> => {
     try {
       console.log('[EXPORT] Starting code generation from image, prompt length:', prompt?.length || 0);
+      console.log('[EXPORT] Image URL format:', imageUrl.substring(0, 50) + '...');
+      console.log('[EXPORT] Image URL starts with data:image/:', imageUrl.startsWith('data:image/'));
       updateExportState({ status: 'generating', progress: 75 });
       
       console.log('[EXPORT] Getting Canva user token for authentication');
       const token = await auth.getCanvaUserToken();
       
+      const requestBody = {
+        imageDataURL: imageUrl,
+        prompt: prompt || 'Generate React component code for this design',
+      };
+      
+      console.log('[EXPORT] Request body keys:', Object.keys(requestBody));
       console.log('[EXPORT] Making API request to /api/generate');
-      const response = await fetch('/api/generate', {
+      
+      const response = await fetch('http://localhost:3001/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          imageDataURL: imageUrl,
-          prompt: prompt || 'Generate React component code for this design',
-        }),
+        body: JSON.stringify(requestBody),
       });
       
       if (!response.ok) {
+        const errorText = await response.text();
         console.error('[EXPORT] API request failed:', response.status, response.statusText);
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        console.error('[EXPORT] Error response body:', errorText);
+        throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       const data = await response.json();

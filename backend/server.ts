@@ -10,8 +10,8 @@ async function main() {
   const router = express.Router();
 
   // Middleware to parse JSON bodies. The limit is increased to handle the image data URLs.
-  // router.use(express.json({ limit: '15mb' }));
-  // console.log('[SERVER] JSON middleware configured with 15mb limit');
+  router.use(express.json({ limit: '15mb' }));
+  console.log('[SERVER] JSON middleware configured with 15mb limit');
 
 
   /**
