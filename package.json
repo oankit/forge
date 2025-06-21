@@ -30,6 +30,7 @@
     "@canva/user": "^2.1.0",
     "@types/cors": "^2.8.19",
     "@types/next": "^9.0.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "ai": "^4.3.16",
     "cookie-parser": "1.4.7",
     "cors": "2.8.5",

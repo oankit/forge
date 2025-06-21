@@ -52,7 +52,7 @@ cp .env.example .env
    - Copy the token to your `.env` file:
 
 ```env
-VERCEL_API_KEY=your_vercel_api_key_here
+V0_API_KEY=your_V0_API_KEY_here
 ```
 
 ### 3. Start the Development Server
@@ -198,7 +198,7 @@ pages/api/
    - Solution: Try again or check design permissions
 
 2. **API Key Missing**: Vercel API key not configured
-   - Solution: Add `VERCEL_API_KEY` to `.env` file
+   - Solution: Add `V0_API_KEY` to `.env` file
 
 3. **Generation Timeout**: AI request took too long
    - Solution: Try with a simpler design or check network

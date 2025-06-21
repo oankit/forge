@@ -2,17 +2,17 @@ import { Alert } from "@canva/app-ui-kit";
 import { useAppContext } from "src/context";
 
 export const AppError = () => {
-  const { loadingApp, creditsError, appError, setAppError } = useAppContext();
-  if (loadingApp || (!appError && !creditsError)) {
-    return null;
+  const { loadingApp, appError, setAppError } = useAppContext();
+  if (loadingApp || !appError) {
+    return;
   }
 
   return (
     <Alert
       tone="critical"
-      onDismiss={creditsError ? undefined : () => setAppError("")}
+      onDismiss={() => setAppError("")}
     >
-      {creditsError || appError}
+      {appError}
     </Alert>
   );
 };

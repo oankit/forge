@@ -29,8 +29,10 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   const [copySuccess, setCopySuccess] = useState(false);
 
   const handleCopyCode = async () => {
+    console.log('[CODE_DISPLAY] Attempting to copy code to clipboard, length:', code.length);
     try {
       await navigator.clipboard.writeText(code);
+      console.log('[CODE_DISPLAY] Code copied to clipboard successfully');
       setCopySuccess(true);
       
       // Reset copy success message after 2 seconds
@@ -38,6 +40,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         setCopySuccess(false);
       }, 2000);
     } catch {
+      console.log('[CODE_DISPLAY] Clipboard API failed, using fallback method');
       // Fallback for browsers that don't support clipboard API
       const textArea = document.createElement('textarea');
       textArea.value = code;
@@ -45,9 +48,11 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       textArea.select();
       try {
         document.execCommand('copy');
+        console.log('[CODE_DISPLAY] Code copied using fallback method');
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       } catch {
+        console.error('[CODE_DISPLAY] Fallback copy method also failed');
         // Fallback copy failed - silently handle error
       }
       document.body.removeChild(textArea);
@@ -55,15 +60,18 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   };
 
   const downloadCode = () => {
+    const filename = `generated-component.${language === 'typescript' ? 'tsx' : 'jsx'}`;
+    console.log('[CODE_DISPLAY] Starting code download as:', filename, 'size:', code.length, 'characters');
     const blob = new Blob([code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `generated-component.${language === 'typescript' ? 'tsx' : 'jsx'}`;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    console.log('[CODE_DISPLAY] Code download initiated successfully');
   };
 
   if (!code) {

@@ -25,7 +25,7 @@ Authorization: Bearer <canva_user_jwt_token>
 CANVA_JWT_SECRET=your_canva_jwt_secret
 
 # For code generation
-VERCEL_API_KEY=your_vercel_api_key
+V0_API_KEY=your_V0_API_KEY
 
 # For deployment
 VERCEL_DEPLOY_TOKEN=your_vercel_deploy_token

@@ -2,10 +2,23 @@ import { Grid, ImageCard, Rows, Text } from "@canva/app-ui-kit";
 import type { QueuedImage } from "@canva/asset";
 import { upload } from "@canva/asset";
 import { addElementAtPoint, ui } from "@canva/design";
-import type { ImageType } from "src/api";
-import { useAppContext } from "src/context";
 import * as styles from "styles/utils.css";
 import { FormattedMessage, useIntl } from "react-intl";
+
+// Define ImageType interface locally since it's no longer in src/api
+interface ImageType {
+  label: string;
+  thumbnail: {
+    url: string;
+    width: number;
+    height: number;
+  };
+  fullsize: {
+    url: string;
+    width: number;
+    height: number;
+  };
+}
 
 const THUMBNAIL_HEIGHT = 150;
 
@@ -25,7 +38,9 @@ const uploadImage = async (image: ImageType): Promise<QueuedImage> => {
 };
 
 export const ImageGrid = () => {
-  const { generatedImages } = useAppContext();
+  // Note: generatedImages is no longer part of the context since we moved to code-only generation
+  // This component is kept for potential future use but currently has no images to display
+  const generatedImages: ImageType[] = [];
 
   const onDragStart = async (
     event: React.DragEvent<HTMLElement>,

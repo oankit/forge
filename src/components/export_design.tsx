@@ -16,6 +16,7 @@ import {
   ImageCard,
 } from '@canva/app-ui-kit';
 import { requestExport } from '@canva/design';
+import { auth } from '@canva/user';
 import { useAppContext } from 'src/context';
 
 interface ExportDesignProps {
@@ -53,6 +54,7 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
 
   const exportDesignAsImage = async (): Promise<string> => {
     try {
+      console.log('[EXPORT] Starting design export as image');
       updateExportState({ status: 'exporting', progress: 25 });
       
       const result = await requestExport({
@@ -60,9 +62,11 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
       });
       
       if (result.status === 'completed' && result.exportBlobs.length > 0) {
+        console.log('[EXPORT] Design export completed successfully');
         updateExportState({ progress: 50 });
         return result.exportBlobs[0].url;
       } else {
+        console.error('[EXPORT] Export was cancelled or failed');
         throw new Error('Export was cancelled or failed');
       }
     } catch (error) {
@@ -72,24 +76,32 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
 
   const generateCodeFromImage = async (imageUrl: string, prompt: string): Promise<string> => {
     try {
+      console.log('[EXPORT] Starting code generation from image, prompt length:', prompt?.length || 0);
       updateExportState({ status: 'generating', progress: 75 });
       
-      const response = await fetch('/api/generate_code', {
+      console.log('[EXPORT] Getting Canva user token for authentication');
+      const token = await auth.getCanvaUserToken();
+      
+      console.log('[EXPORT] Making API request to /api/generate');
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          imageUrl,
+          imageDataURL: imageUrl,
           prompt: prompt || 'Generate React component code for this design',
         }),
       });
       
       if (!response.ok) {
+        console.error('[EXPORT] API request failed:', response.status, response.statusText);
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
+      console.log('[EXPORT] Code generation API response received, code length:', (data.code || data.text || '').length);
       updateExportState({ progress: 100 });
       
       return data.code || data.text || 'No code generated';

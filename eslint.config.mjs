@@ -11,4 +11,9 @@ export default [
     ],
   },
   ...canvaPlugin.configs.apps,
+  {
+    rules: {
+      "no-console": "off",
+    },
+  },
 ];
