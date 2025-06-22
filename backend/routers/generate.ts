@@ -1,4 +1,4 @@
-import { generateText } from 'ai';
+import { generateText, streamText } from 'ai';
 import { createVercel } from '@ai-sdk/vercel';
 import * as express from 'express';
 import { createJwtMiddleware } from '../../utils/backend/jwt_middleware';
@@ -111,6 +111,88 @@ Component should be named 'GeneratedComponent' and exported as default.`;
     // Filter out thinking tags from the response
     const cleanedCode = filterThinkingTags(result.text);
     return cleanedCode;
+  } catch (error) {
+    throw new Error(`Failed to generate code: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Generate React component code from an image using v0-1.0-md model with streaming
+ */
+async function* streamCodeFromImageDataURL(
+  imageDataURL: string,
+  userPrompt?: string
+): AsyncGenerator<string, void, unknown> {
+  const defaultPrompt = `You are v0, an expert AI assistant specializing in creating production-ready Next.js applications from visual designs.
+
+Analyze the provided design image and generate a single, complete, self-contained React component that precisely recreates the design.
+
+**Strict Requirements:**
+- **Framework:** Generate code for **Next.js 15 using the App Router**. The output must be a **React Server Component** and marked with \`'use client'\` if client-side interactivity is required.
+- **Language:** Use **TypeScript** exclusively. All props must be strongly typed using \`import type\`.
+- **Styling:** Use **Tailwind CSS** utility classes exclusively. Use theme-aware classes like \`bg-primary\` and \`text-primary-foreground\` where appropriate.
+- **Components:** Use standard HTML elements styled with Tailwind CSS. Create custom components using div, button, input, and other semantic HTML elements.
+- **Icons:** You **MUST** use icons from the **"lucide-react"** package. **Do not use inline SVGs.**
+- **Responsiveness:** The component must be fully responsive using a mobile-first approach.
+- **Accessibility:** Implement all accessibility best practices, including semantic HTML (\`<main>\`, \`<section>\`), correct ARIA roles, and \`alt\` text for images.
+
+**VERCEL DEPLOYMENT COMPATIBILITY:**
+- Generate code that works seamlessly with Next.js 15 framework
+- Use only standard web APIs and React features supported by Vercel
+- Avoid any Node.js specific imports or server-side only features
+- Ensure all assets and styles are properly bundled and optimized
+- Use relative imports and standard file extensions
+- Follow Vercel's best practices for static generation and deployment
+
+**DESIGN ACCURACY:**
+- Match colors, gradients, and shadows exactly
+- Replicate typography (font sizes, weights, line heights) precisely
+- Maintain exact spacing, padding, and margins
+- Preserve layout structure and element positioning
+- Implement any visible interactive states (hover, focus, active)
+
+**Output Format:**
+- **Return ONLY the TypeScript component code (.tsx)**.
+- Do not include any explanations, comments, or markdown formatting outside of the code itself.
+- Start directly with import statements.
+- The component must be named **'GeneratedComponent'** and exported as the default export.
+- Ensure code is immediately executable and deployable to Vercel
+- Use standard React patterns compatible with both development and production builds
+
+Component should be named 'GeneratedComponent' and exported as default.`;
+
+  const prompt = userPrompt ? `${userPrompt}\n\n${defaultPrompt}` : defaultPrompt;
+
+  try {
+    const result = await streamText({
+      model: vercel('v0-1.0-md'),
+      system: 'You are v0, an expert AI assistant specializing in creating production-ready Next.js 15 applications. You have deep expertise in TypeScript, Tailwind CSS, shadcn/ui components, lucide-react icons, and Vercel deployment. You create components that are immediately deployable and follow modern React Server Component patterns.',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: prompt,
+            },
+            {
+              type: 'image',
+              image: imageDataURL,
+            },
+          ],
+        },
+      ],
+      maxTokens: 6000,
+      temperature: 0.1,
+    });
+
+    let accumulatedText = '';
+    for await (const delta of result.textStream) {
+      accumulatedText += delta;
+      // Filter thinking tags from accumulated text and yield clean chunks
+      const cleanedText = filterThinkingTags(accumulatedText);
+      yield cleanedText;
+    }
   } catch (error) {
     throw new Error(`Failed to generate code: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -257,6 +339,58 @@ function validateImageDataURL(imageDataURL: string): { isValid: boolean; error?:
         success: false,
         error: 'Failed to generate code. Please try again.',
       });
+    }
+  });
+
+  // Streaming endpoint for real-time code generation
+  router.post('/stream', jwtMiddleware, async (req: Request, res: Response) => {
+    try {
+      const { imageDataURL, prompt } = req.body as GenerateRequest;
+
+      // Validate required fields
+      if (!imageDataURL) {
+        return res.status(400).json({ error: 'imageDataURL is required' });
+      }
+
+      // Validate image data URL
+      const validation = validateImageDataURL(imageDataURL);
+      if (!validation.isValid) {
+        return res.status(400).json({ error: validation.error });
+      }
+
+      // Check for API key
+      if (!process.env.V0_API_KEY) {
+        return res.status(500).json({ error: 'V0_API_KEY is not configured' });
+      }
+
+      // Set headers for streaming
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Transfer-Encoding', 'chunked');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      // Stream the code generation
+      try {
+        for await (const chunk of streamCodeFromImageDataURL(imageDataURL, prompt)) {
+          res.write(chunk);
+        }
+        res.end();
+      } catch (streamError) {
+        console.error('Streaming error:', streamError);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Failed to generate code' });
+        } else {
+          res.write('\n\nError: Failed to complete code generation');
+          res.end();
+        }
+      }
+    } catch (error) {
+      console.error('Stream endpoint error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal server error' });
+      }
     }
   });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import {
   Box,
@@ -8,7 +8,7 @@ import {
   Columns,
   Column,
   Alert,
-  ProgressBar,
+  LoadingIndicator,
   FormField,
   MultilineInput,
   Title
@@ -22,39 +22,110 @@ interface ExportDesignProps {
   onCodeGenerated: (code: string) => void;
 }
 
-type ExportStatus = 'idle' | 'exporting' | 'generating' | 'completed' | 'error';
-
-interface ExportState {
-  status: ExportStatus;
-  progress: number;
-  error: string;
-  exportedImageUrl: string;
-  generatedCode: string;
-}
-
 export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) => {
   const intl = useIntl();
   const { setAppError } = useAppContext();
   
-  const [exportState, setExportState] = useState<ExportState>({
-    status: 'idle',
-    progress: 0,
-    error: '',
-    exportedImageUrl: '',
-    generatedCode: '',
-  });
-  
+  const [isExporting, setIsExporting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [streamingCode, setStreamingCode] = useState<string>('');
+  const [messageIndex, setMessageIndex] = useState(0);
+  const statusMessages = [
+    "🔄 Generating layout structure...",
+    "🧠 Mapping props and logic...",
+    "🎯 Finalizing interactions and responsiveness...",
+    "🧩 Assembling your component..."
+  ];
+  const [error, setError] = useState<string | null>(null);
+  const [instructions, setInstructions] = useState('');
   const exportFormat = 'png'; // Always use PNG for best quality and transparency support
-  const [codePrompt, setCodePrompt] = useState('');
 
-  const updateExportState = (updates: Partial<ExportState>) => {
-    setExportState(prev => ({ ...prev, ...updates }));
+  // Stream code generation with real-time updates
+  const streamCodeGeneration = async (imageDataURL: string, prompt?: string) => {
+    setIsStreaming(true);
+    setStreamingCode('');
+    setError(null);
+
+    try {
+      // Debug logging
+      console.log('[STREAM] Starting code generation with imageDataURL length:', imageDataURL.length);
+      console.log('[STREAM] ImageDataURL starts with:', imageDataURL.substring(0, 50));
+      console.log('[STREAM] Prompt:', prompt || instructions);
+
+      const response = await fetch('http://localhost:3001/api/generate/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await auth.getCanvaUserToken()}`,
+        },
+        body: JSON.stringify({
+          imageDataURL,
+          prompt: prompt || instructions,
+        }),
+      });
+
+      if (!response.ok) {
+        // Log the error response for debugging
+        const errorText = await response.text();
+        console.error('[STREAM] Error response:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body reader available');
+      }
+
+      const decoder = new TextDecoder();
+      let accumulatedCode = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedCode += chunk;
+        setStreamingCode(accumulatedCode);
+      }
+
+      // Set final generated code
+      setGeneratedCode(accumulatedCode);
+      setStreamingCode('');
+    } catch (error) {
+      console.error('Streaming error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to stream code generation');
+    } finally {
+      setIsStreaming(false);
+    }
+  };
+
+  // Rotate status messages every 3 seconds
+  useEffect(() => {
+    if (!isStreaming) return;
+    
+    const interval = setInterval(() => {
+      setMessageIndex(prev => (prev + 1) % statusMessages.length);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [isStreaming, statusMessages.length]);
+
+  const getCharacterCountMessage = () => {
+    const count = streamingCode.length;
+    if (count < 1000) {
+      return `Streaming ${count.toLocaleString()} characters of code...`;
+    } else if (count < 5000) {
+      return `Still generating... ${count.toLocaleString()} characters so far`;
+    } else {
+      return `You've got ${count.toLocaleString()} characters of code so far – almost done!`;
+    }
   };
 
   const exportDesignAsImage = async (): Promise<string> => {
     try {
       console.log('[EXPORT] Starting design export as image');
-      updateExportState({ status: 'exporting', progress: 25 });
       
       const result = await requestExport({
         acceptedFileTypes: [exportFormat],
@@ -62,7 +133,6 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
       
       if (result.status === 'completed' && result.exportBlobs.length > 0) {
         console.log('[EXPORT] Design export completed successfully');
-        updateExportState({ progress: 40 });
         
         // Convert blob URL to base64 data URL
         const blobUrl = result.exportBlobs[0].url;
@@ -84,188 +154,158 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
     }
   };
 
-  const generateCodeFromImage = async (imageUrl: string, prompt: string): Promise<string> => {
-    try {
-      console.log('[EXPORT] Starting code generation from image, prompt length:', prompt?.length || 0);
-      console.log('[EXPORT] Image URL format:', imageUrl.substring(0, 50) + '...');
-      console.log('[EXPORT] Image URL starts with data:image/:', imageUrl.startsWith('data:image/'));
-      updateExportState({ status: 'generating', progress: 75 });
-      
-      console.log('[EXPORT] Getting Canva user token for authentication');
-      const token = await auth.getCanvaUserToken();
-      
-      const requestBody = {
-        imageDataURL: imageUrl,
-        prompt: prompt || 'Generate React component code for this design',
-      };
-      
-      console.log('[EXPORT] Request body keys:', Object.keys(requestBody));
-      console.log('[EXPORT] Making API request to /api/generate');
-      
-      const response = await fetch('http://localhost:3001/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[EXPORT] API request failed:', response.status, response.statusText);
-        console.error('[EXPORT] Error response body:', errorText);
-        throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log('[EXPORT] Code generation API response received, code length:', (data.code || data.text || '').length);
-      updateExportState({ progress: 100 });
-      
-      return data.code || data.text || 'No code generated';
-    } catch (error) {
-      throw new Error(`Failed to generate code: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
+
 
   const handleExportAndGenerate = async () => {
     try {
-      updateExportState({ 
-        status: 'exporting', 
-        progress: 0, 
-        error: '', 
-        exportedImageUrl: '', 
-        generatedCode: '' 
-      });
+      setIsExporting(true);
+      setIsGenerating(false);
+      setError(null);
+      setGeneratedCode(null);
+      setStreamingCode('');
       
       // Step 1: Export design as image
       const imageUrl = await exportDesignAsImage();
-      updateExportState({ exportedImageUrl: imageUrl });
+
+      setIsExporting(false);
       
-      // Step 2: Generate code from image
-      const generatedCode = await generateCodeFromImage(imageUrl, codePrompt);
+      // Step 2: Stream code generation from image
+      await streamCodeGeneration(imageUrl, instructions);
       
-      updateExportState({ 
-        status: 'completed', 
-        generatedCode,
-        progress: 100 
-      });
-      
-      // Notify parent component
-      onCodeGenerated(generatedCode);
+      // Notify parent component if code was generated
+      if (generatedCode) {
+        onCodeGenerated(generatedCode);
+      }
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      updateExportState({ 
-        status: 'error', 
-        error: errorMessage,
-        progress: 0 
-      });
+      setError(errorMessage);
+      setIsExporting(false);
+      setIsGenerating(false);
+      setIsStreaming(false);
       setAppError(errorMessage);
     }
   };
 
   const resetExport = () => {
-    updateExportState({
-      status: 'idle',
-      progress: 0,
-      error: '',
-      exportedImageUrl: '',
-      generatedCode: '',
-    });
+    setIsExporting(false);
+    setIsGenerating(false);
+    setIsStreaming(false);
+
+    setGeneratedCode(null);
+    setStreamingCode('');
+    setError(null);
   };
 
   const getStatusMessage = () => {
-    switch (exportState.status) {
-      case 'exporting':
-        return intl.formatMessage({
-          defaultMessage: "Exporting design...",
-          description: "Status message during design export"
-        });
-      case 'generating':
-        return intl.formatMessage({
-          defaultMessage: "Generating code with AI...",
-          description: "Status message during code generation"
-        });
-      case 'completed':
-        return intl.formatMessage({
-          defaultMessage: "Code generation completed!",
-          description: "Status message when process is completed"
-        });
-      case 'error':
-        return intl.formatMessage({
-          defaultMessage: "Export failed",
-          description: "Status message when export fails"
-        });
-      default:
-        return '';
+    if (isExporting) {
+      return intl.formatMessage({
+        defaultMessage: "Exporting design...",
+        description: "Status message during design export"
+      });
     }
+    if (generatedCode) {
+      return intl.formatMessage({
+        defaultMessage: "Code generation completed!",
+        description: "Status message when process is completed"
+      });
+    }
+    if (error) {
+      return intl.formatMessage({
+        defaultMessage: "Export failed",
+        description: "Status message when export fails"
+      });
+    }
+    return '';
   };
 
-  const isLoading = ['exporting', 'generating'].includes(exportState.status);
-  const isCompleted = exportState.status === 'completed';
-  const hasError = exportState.status === 'error';
+  const isLoading = isExporting || isGenerating || isStreaming;
+  const isCompleted = !!generatedCode && !isLoading;
+  const hasError = !!error;
 
   return (
     <Box padding="2u">
       <Rows spacing="2u">
-        <Columns spacing="1u" alignY="start">
-          <Column width="content">
-            <Box paddingTop="0.5u">
-              <Rocket size={16} />
-            </Box>
-          </Column>
-          <Column>
-            <Text>
-              {intl.formatMessage({
-                defaultMessage: "Generate React component code from your current design using AI.",
-                description: "Description for the code generation functionality"
-              })}
-            </Text>
-          </Column>
-        </Columns>
-
-
-        {/* Code Generation Prompt */}
-        <FormField
-          label={
+        {/* Hide description and form when loading */}
+        {!isLoading && (
+          <>
             <Columns spacing="1u" alignY="start">
               <Column width="content">
                 <Box paddingTop="0.5u">
-                  <Brain size={16} />
+                  <Rocket size={16} />
                 </Box>
               </Column>
               <Column>
-                {intl.formatMessage({
-                  defaultMessage: "Instructions (Optional)",
-                  description: "Label for code generation prompt input"
-                })}
+                <Text>
+                  {intl.formatMessage({
+                    defaultMessage: "Generate React component code from your current design using AI.",
+                    description: "Description for the code generation functionality"
+                  })}
+                </Text>
               </Column>
             </Columns>
-          }
-          value={codePrompt}
-          control={(props) => (
-            <MultilineInput
-              {...props}
-              placeholder={intl.formatMessage({
-                defaultMessage: "e.g., Use Tailwind CSS and Flexbox layout",
-                description: "Placeholder for code generation prompt"
-              })}
-              onChange={setCodePrompt}
-              maxLength={500}
-              minRows={3}
+
+
+            {/* Code Generation Prompt */}
+            <FormField
+              label={
+                <Columns spacing="1u" alignY="start">
+                  <Column width="content">
+                    <Box paddingTop="0.5u">
+                      <Brain size={16} />
+                    </Box>
+                  </Column>
+                  <Column>
+                    {intl.formatMessage({
+                      defaultMessage: "Instructions (Optional)",
+                      description: "Label for code generation prompt input"
+                    })}
+                  </Column>
+                </Columns>
+              }
+              value={instructions}
+              control={(props) => (
+                <MultilineInput
+                  {...props}
+                  placeholder={intl.formatMessage({
+                    defaultMessage: "e.g., Use Tailwind CSS and Flexbox layout",
+                    description: "Placeholder for code generation prompt"
+                  })}
+                  onChange={setInstructions}
+                  maxLength={500}
+                  minRows={3}
+                />
+              )}
             />
-          )}
-        />
+          </>
+        )}
 
         {/* Progress Indicator */}
-        {isLoading && (
+        {isLoading && !isStreaming && (
           <Box>
-            <Rows spacing="1u">
-              <ProgressBar value={exportState.progress} />
-              <Rows align="center" spacing="2u">
-                <Title size="small">{getStatusMessage()}</Title>
-              </Rows>
+            <Rows spacing="2u" align="center">
+              <LoadingIndicator size="medium" />
+              <Title size="small">{getStatusMessage()}</Title>
+            </Rows>
+          </Box>
+        )}
+
+        {/* Generation Progress Display */}
+        {isStreaming && (
+          <Box>
+            <Rows spacing="2u" align="center">
+              <LoadingIndicator size="medium" />
+              <Title 
+                size="small" 
+              >
+                {statusMessages[messageIndex]}
+              </Title>
+              <Text 
+                size="small" 
+                tone="secondary"
+              >
+                {getCharacterCountMessage()}
+              </Text>
             </Rows>
           </Box>
         )}
@@ -276,7 +316,7 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
             defaultMessage: "Export Failed",
             description: "Title for export error alert"
           })}>
-            {exportState.error}
+            {error}
           </Alert>
         )}
 
