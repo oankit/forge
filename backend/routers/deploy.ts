@@ -197,7 +197,7 @@ const Home: NextPage = () => {
       </Head>
 
       <main className="flex flex-col items-center justify-center w-full flex-1 px-4 sm:px-20 text-center">
-        <h1 className="text-3xl font-bold mb-8">Generated Component</h1>
+
         <div className="w-full max-w-4xl">
           <${componentName} />
         </div>

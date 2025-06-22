@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import {
   Box,
@@ -8,7 +8,7 @@ import {
   Columns,
   Column,
   Alert,
-  ProgressBar,
+  LoadingIndicator,
   FormField,
   MultilineInput,
   Title
@@ -46,6 +46,66 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
   
   const exportFormat = 'png'; // Always use PNG for best quality and transparency support
   const [codePrompt, setCodePrompt] = useState('');
+  const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
+  
+  // Status phrases for the animated ticker
+  const statusPhrases = [
+    // --- Technical & Nerdy ---
+    "Compiling the pixels...",
+    "Transpiling design to JSX...",
+    "Resolving component dependencies...",
+    "Reticulating splines...",
+    "Deconstructing the DOM tree...",
+    "Calibrating the AI matrix...",
+    "Buffering the render props...",
+    "Optimizing the build output...",
+    "Warming up the serverless functions...",
+    "Synchronizing quantum states...",
+    "Re-aligning the flux capacitor...",
+    "Polishing the TypeScript interfaces...",
+    "Running Prettier... twice.",
+  
+    // --- Agentic & AI-Focused ---
+    "Consulting the AI architect...",
+    "The agent is on the case...",
+    "Initiating cognitive cycle...",
+    "Running neural network inference...",
+    "Parsing visual vectors...",
+    "Synthesizing code from concept...",
+    "Engaging heuristic algorithms...",
+    "The AI is pondering your design...",
+    "Training a tiny model on your button...",
+    "Waking up the AI... it's a heavy sleeper.",
+    "Asking the silicon for its opinion...",
+  
+    // --- Witty & Fun ---
+    "Summoning the code spirits...",
+    "Teaching the AI about rounded corners...",
+    "Don't worry, the AI is a professional...",
+    "Pretending to be a human developer...",
+    "Adding just one more `div`...",
+    "Arguing with the linter...",
+    "Hiding my API keys...",
+    "Searching for a missing semicolon...",
+    "Looks like you've been working hard...",
+    "Generating some ✨magic✨...",
+    "Brewing some fresh code...",
+    
+    // --- Classic & Gaming-Inspired ---
+    "Generating your component...",
+    "Doing some behind-the-scenes magic...",
+    "Still working on it...",
+    "Making it developer-ready...",
+    "Assembling the final touches...",
+    "Polishing things up...",
+    "Getting everything just right...",
+    "Running it through our AI brain...",
+    "Typing... kind of.",
+    "Loading... please wait.",
+    "Constructing additional pylons...",
+    "Warp drive charging...",
+    "Building terrain..."
+  ];
 
   const updateExportState = (updates: Partial<ExportState>) => {
     setExportState(prev => ({ ...prev, ...updates }));
@@ -175,97 +235,122 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
     });
   };
 
-  const getStatusMessage = () => {
-    switch (exportState.status) {
-      case 'exporting':
-        return intl.formatMessage({
-          defaultMessage: "Exporting design...",
-          description: "Status message during design export"
-        });
-      case 'generating':
-        return intl.formatMessage({
-          defaultMessage: "Generating code with AI...",
-          description: "Status message during code generation"
-        });
-      case 'completed':
-        return intl.formatMessage({
-          defaultMessage: "Code generation completed!",
-          description: "Status message when process is completed"
-        });
-      case 'error':
-        return intl.formatMessage({
-          defaultMessage: "Export failed",
-          description: "Status message when export fails"
-        });
-      default:
-        return '';
-    }
-  };
+
 
   const isLoading = ['exporting', 'generating'].includes(exportState.status);
   const isCompleted = exportState.status === 'completed';
   const hasError = exportState.status === 'error';
+  
+  // Animate the status ticker when loading
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isLoading) {
+      interval = setInterval(() => {
+        setCurrentStatusIndex((prevIndex) => 
+          (prevIndex + 1) % statusPhrases.length
+        );
+      }, 1800); // Cycle every 1.8 seconds
+    } else {
+      setCurrentStatusIndex(0); // Reset when not loading
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isLoading, statusPhrases.length]);
 
   return (
     <Box padding="2u">
       <Rows spacing="2u">
-        <Columns spacing="1u" alignY="start">
-          <Column width="content">
-            <Box paddingTop="0.5u">
-              <Rocket size={16} />
-            </Box>
-          </Column>
-          <Column>
-            <Text>
-              {intl.formatMessage({
-                defaultMessage: "Generate React component code from your current design using AI.",
-                description: "Description for the code generation functionality"
-              })}
-            </Text>
-          </Column>
-        </Columns>
-
-
-        {/* Code Generation Prompt */}
-        <FormField
-          label={
-            <Columns spacing="1u" alignY="start">
-              <Column width="content">
-                <Box paddingTop="0.5u">
-                  <Brain size={16} />
-                </Box>
-              </Column>
-              <Column>
+        {/* Description - Hidden during loading */}
+        {!isLoading && (
+          <Columns spacing="1u" alignY="start">
+            <Column width="content">
+              <Box paddingTop="0.5u">
+                <Rocket size={16} />
+              </Box>
+            </Column>
+            <Column>
+              <Text>
                 {intl.formatMessage({
-                  defaultMessage: "Instructions (Optional)",
-                  description: "Label for code generation prompt input"
+                  defaultMessage: "Generate React component code from your current design using AI.",
+                  description: "Description for the code generation functionality"
                 })}
-              </Column>
-            </Columns>
-          }
-          value={codePrompt}
-          control={(props) => (
-            <MultilineInput
-              {...props}
-              placeholder={intl.formatMessage({
-                defaultMessage: "e.g., Use Tailwind CSS and Flexbox layout",
-                description: "Placeholder for code generation prompt"
-              })}
-              onChange={setCodePrompt}
-              maxLength={500}
-              minRows={3}
-            />
-          )}
-        />
+              </Text>
+            </Column>
+          </Columns>
+        )}
 
-        {/* Progress Indicator */}
+        {/* Code Generation Prompt - Hidden during loading */}
+        {!isLoading && (
+          <FormField
+            label={
+              <Columns spacing="1u" alignY="start">
+                <Column width="content">
+                  <Box paddingTop="0.5u">
+                    <Brain size={16} />
+                  </Box>
+                </Column>
+                <Column>
+                  {intl.formatMessage({
+                    defaultMessage: "Instructions (Optional)",
+                    description: "Label for code generation prompt input"
+                  })}
+                </Column>
+              </Columns>
+            }
+            value={codePrompt}
+            control={(props) => (
+              <MultilineInput
+                {...props}
+                placeholder={intl.formatMessage({
+                  defaultMessage: "e.g., Use Tailwind CSS and Flexbox layout",
+                  description: "Placeholder for code generation prompt"
+                })}
+                onChange={setCodePrompt}
+                maxLength={500}
+                minRows={3}
+              />
+            )}
+          />
+        )}
+
+        {/* Loading Indicator with Animated Status Ticker */}
         {isLoading && (
           <Box>
-            <Rows spacing="1u">
-              <ProgressBar value={exportState.progress} />
-              <Rows align="center" spacing="2u">
-                <Title size="small">{getStatusMessage()}</Title>
-              </Rows>
+            <Rows spacing="2u" align="center">
+              <LoadingIndicator size="medium" />
+              <div 
+                style={{
+                  height: '48px',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}
+              >
+                <div
+                  style={{
+                    transform: `translateY(-${currentStatusIndex * 48}px)`,
+                    transition: 'transform 0.5s ease-in-out'
+                  }}
+                >
+                  {statusPhrases.map((phrase, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        height: '48px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Title size="small">{phrase}</Title>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </Rows>
           </Box>
         )}

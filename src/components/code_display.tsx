@@ -145,7 +145,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       
       const token = await auth.getCanvaUserToken();
       const componentName = 'GeneratedComponent';
-      const projectName = `canva-component-${Date.now().toString(36)}`;
+      const projectName = `forge-preview${Date.now().toString(36)}`;
       
       const requestBody = {
         code,
@@ -321,7 +321,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
                 padding: '12px'
               }}
             >
-              <pre style={{ margin: 0, padding: 0, color: '#333333', fontWeight: '550' }}>
+              <pre style={{ margin: 0, padding: 0, color: '#333333', fontWeight: '540' }}>
                 <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
               </pre>
             </div>
