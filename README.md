@@ -44,8 +44,20 @@ This is a starting point for your app using your chosen template. The complete d
 ## Quick start
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
+
+### Why `--legacy-peer-deps`?
+
+This project uses React 19 and the latest Vercel AI SDK packages for enhanced performance and features. However, some Canva SDK packages (like `@canva/app-i18n-kit`) still require React 18.3.1 as a peer dependency, creating a version conflict.
+
+The `--legacy-peer-deps` flag tells npm to use a more permissive dependency resolution algorithm that allows these packages to coexist. This is safe because:
+
+- React 19 is backward compatible with React 18 components and APIs
+- The Canva SDK packages will continue to function correctly with React 19
+- This approach is recommended by npm for handling peer dependency conflicts during framework transitions
+
+Once Canva updates their packages to support React 19, this flag can be removed.
 
 ## Running your Canva App
 
