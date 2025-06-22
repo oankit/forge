@@ -9,14 +9,24 @@ import {
   Alert,
   Scrollable,
   Columns,
-  Column,
+  Column
 } from '@canva/app-ui-kit';
+import { auth } from '@canva/user';
+import { requestOpenExternalUrl } from '@canva/platform';
 
 interface CodeDisplayProps {
   code: string;
   title?: string;
   language?: string;
   onClear?: () => void;
+}
+
+type DeployStatus = 'idle' | 'deploying' | 'deployed' | 'error';
+
+interface DeployState {
+  status: DeployStatus;
+  deploymentUrl: string;
+  error: string;
 }
 
 export const CodeDisplay: React.FC<CodeDisplayProps> = ({
@@ -27,6 +37,11 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
 }) => {
   const intl = useIntl();
   const [copySuccess, setCopySuccess] = useState(false);
+  const [deployState, setDeployState] = useState<DeployState>({
+    status: 'idle',
+    deploymentUrl: '',
+    error: '',
+  });
 
   const handleCopyCode = async () => {
     console.log('[CODE_DISPLAY] Attempting to copy code to clipboard, length:', code.length);
@@ -74,6 +89,73 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     console.log('[CODE_DISPLAY] Code download initiated successfully');
   };
 
+  const handleDeployAndPreview = async () => {
+    try {
+      console.log('[CODE_DISPLAY] Starting deployment process');
+      setDeployState({ status: 'deploying', deploymentUrl: '', error: '' });
+      
+      // Get Canva user token for authentication
+      const token = await auth.getCanvaUserToken();
+      
+      // Generate component and project names
+      const componentName = 'GeneratedComponent';
+      const projectName = `canva-component-${Date.now().toString(36)}`;
+      
+      const requestBody = {
+        code,
+        componentName,
+        projectName,
+        framework: 'next' as const,
+      };
+      
+      console.log('[CODE_DISPLAY] Making deployment request to /api/deploy');
+      const response = await fetch('http://localhost:3001/api/deploy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Deployment failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('[CODE_DISPLAY] Deployment successful:', data.deploymentUrl);
+      
+      setDeployState({
+        status: 'deployed',
+        deploymentUrl: data.deploymentUrl,
+        error: '',
+      });
+      
+      // Open the deployment URL in a new tab for preview
+      if (data.deploymentUrl) {
+        await requestOpenExternalUrl({ url: `https://${data.deploymentUrl}` });
+      }
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Deployment failed';
+      console.error('[CODE_DISPLAY] Deployment failed:', errorMessage);
+      setDeployState({
+        status: 'error',
+        deploymentUrl: '',
+        error: errorMessage,
+      });
+    }
+  };
+
+  const resetDeploy = () => {
+    setDeployState({
+      status: 'idle',
+      deploymentUrl: '',
+      error: '',
+    });
+  };
+
   if (!code) {
     return null;
   }
@@ -115,6 +197,23 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
                   })}
                 </Button>
               </Column>
+              <Column width="content">
+                <Button
+                  variant="primary"
+                  onClick={handleDeployAndPreview}
+                  disabled={!code || deployState.status === 'deploying'}
+                >
+                  {deployState.status === 'deploying' 
+                    ? intl.formatMessage({
+                        defaultMessage: "Deploying...",
+                        description: "Button text while deploying"
+                      })
+                    : intl.formatMessage({
+                        defaultMessage: "Deploy & Preview",
+                        description: "Button to deploy and preview the generated code"
+                      })}
+                </Button>
+              </Column>
               {onClear && (
                 <Column width="content">
                   <Button
@@ -124,6 +223,19 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
                     {intl.formatMessage({
                       defaultMessage: "Clear",
                       description: "Button to clear the generated code"
+                    })}
+                  </Button>
+                </Column>
+              )}
+              {deployState.status === 'deployed' && (
+                <Column width="content">
+                  <Button
+                    variant="secondary"
+                    onClick={resetDeploy}
+                  >
+                    {intl.formatMessage({
+                      defaultMessage: "Reset Deploy",
+                      description: "Button to reset deployment state"
                     })}
                   </Button>
                 </Column>
@@ -142,6 +254,56 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
               defaultMessage: "Code has been copied to your clipboard.",
               description: "Success message when code is copied"
             })}
+          </Alert>
+        )}
+
+        {/* Deployment Success Alert */}
+        {deployState.status === 'deployed' && (
+          <Alert tone="positive" title={intl.formatMessage({
+            defaultMessage: "Deployment Successful!",
+            description: "Alert title when deployment is successful"
+          })}>
+            <Rows spacing="1u">
+              <Text>
+                {intl.formatMessage({
+                  defaultMessage: "Your code has been deployed successfully and opened in a new tab for preview.",
+                  description: "Success message when deployment is completed"
+                })}
+              </Text>
+              {deployState.deploymentUrl && (
+                <Text size="small" tone="secondary">
+                  {intl.formatMessage({
+                    defaultMessage: "Deployment URL: {url}",
+                    description: "Label showing the deployment URL"
+                  }, { url: `https://${deployState.deploymentUrl}` })}
+                </Text>
+              )}
+            </Rows>
+          </Alert>
+        )}
+
+        {/* Deployment Error Alert */}
+        {deployState.status === 'error' && (
+          <Alert tone="critical" title={intl.formatMessage({
+            defaultMessage: "Deployment Failed",
+            description: "Alert title when deployment fails"
+          })}>
+            <Rows spacing="1u">
+              <Text>
+                {intl.formatMessage({
+                  defaultMessage: "Failed to deploy your code. Please try again.",
+                  description: "Error message when deployment fails"
+                })}
+              </Text>
+              {deployState.error && (
+                <Text size="small" tone="secondary">
+                  {intl.formatMessage({
+                    defaultMessage: "Error: {error}",
+                    description: "Label showing the deployment error"
+                  }, { error: deployState.error })}
+                </Text>
+              )}
+            </Rows>
           </Alert>
         )}
 
@@ -213,7 +375,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         })}>
           <Text size="small">
             {intl.formatMessage({
-              defaultMessage: "Copy this code and paste it into your React project. Make sure you have Tailwind CSS configured in your project for the styling to work properly.",
+              defaultMessage: "You can copy this code and paste it into your React project, download it as a file, or deploy it directly to Vercel for instant preview. Make sure you have Tailwind CSS configured in your project for the styling to work properly.",
               description: "Instructions for using the generated code"
             })}
           </Text>

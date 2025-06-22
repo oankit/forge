@@ -49,9 +49,9 @@ async function createVercelDeployment(
   framework: 'next' | 'react' = 'next'
 ): Promise<string> {
   // Validate Vercel API token
-  const vercelToken = process.env.VERCEL_DEPLOY_TOKEN;
+  const vercelToken = process.env.VERCEL_ACCESS_TOKEN;
   if (!vercelToken) {
-    throw new Error('VERCEL_DEPLOY_TOKEN environment variable is not set');
+    throw new Error('VERCEL_ACCESS_TOKEN environment variable is not set');
   }
 
   // Prepare files for deployment
@@ -73,15 +73,28 @@ async function createVercelDeployment(
           dev: 'next dev',
           build: 'next build',
           start: 'next start',
+          lint: 'next lint',
         },
         dependencies: {
-          next: '^13.4.19',
+          next: '^15.0.0',
           react: '^18.2.0',
           'react-dom': '^18.2.0',
           typescript: '^5.1.6',
           '@types/node': '^20.5.0',
           '@types/react': '^18.2.20',
           '@types/react-dom': '^18.2.7',
+          tailwindcss: '^3.4.0',
+          autoprefixer: '^10.4.16',
+          postcss: '^8.4.32',
+          'class-variance-authority': '^0.7.0',
+          clsx: '^2.0.0',
+          'tailwind-merge': '^2.0.0',
+          'lucide-react': '^0.263.1',
+        },
+        devDependencies: {
+          eslint: '^8.57.0',
+          'eslint-config-next': '^15.0.0',
+          '@tailwindcss/typography': '^0.5.10',
         },
       }),
     });
@@ -376,7 +389,7 @@ root.render(
       }
 
       // Check for required environment variables
-      if (!process.env.VERCEL_DEPLOY_TOKEN) {
+      if (!process.env.VERCEL_ACCESS_TOKEN) {
         return res.status(500).json({
           success: false,
           error: 'Server configuration error: Missing deployment token',
