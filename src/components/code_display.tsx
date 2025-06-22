@@ -4,13 +4,12 @@ import {
   Box,
   Button,
   Text,
-  Title,
   Rows,
   Alert,
-  Scrollable,
   Columns,
-  Column
+  Column,
 } from '@canva/app-ui-kit';
+import { Copy, Check, Upload, SquareCode } from 'lucide-react';
 import { auth } from '@canva/user';
 import { requestOpenExternalUrl } from '@canva/platform';
 
@@ -29,6 +28,79 @@ interface DeployState {
   error: string;
 }
 
+// Simple syntax highlighting function for React/TypeScript
+const highlightCode = (code: string, language: string): string => {
+  // This is a simplified version - in production, you might want to use a proper parser
+  let highlighted = code;
+  
+  if (language === 'typescript' || language === 'javascript' || language === 'tsx' || language === 'jsx') {
+    // Keywords
+    const keywords = [
+      'import', 'from', 'export', 'const', 'let', 'var', 'function', 'return', 'if', 'else',
+      'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'class', 'extends',
+      'new', 'this', 'super', 'static', 'async', 'await', 'try', 'catch', 'finally',
+      'throw', 'typeof', 'instanceof', 'void', 'delete', 'interface', 'type', 'enum',
+      'implements', 'public', 'private', 'protected', 'readonly', 'as', 'React', 'useState',
+      'useEffect', 'default'
+    ];
+    
+    // Escape HTML
+    highlighted = highlighted
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    
+    // Highlight strings (both single and double quotes) - Quiet Light theme
+    highlighted = highlighted.replace(
+      /('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`)/g,
+      '<span style="color: #448C27;">$1</span>'
+    );
+    
+    // Highlight comments - Quiet Light theme
+    highlighted = highlighted.replace(
+      /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g,
+      '<span style="color: #AAAAAA; font-style: italic;">$1</span>'
+    );
+    
+    // Highlight numbers - Quiet Light theme
+    highlighted = highlighted.replace(
+      /\b(\d+(?:\.\d+)?)\b/g,
+      '<span style="color: #9C5D27;">$1</span>'
+    );
+    
+    // Highlight keywords - Quiet Light theme
+    keywords.forEach(keyword => {
+      const regex = new RegExp(`\\b(${keyword})\\b`, 'g');
+      highlighted = highlighted.replace(
+        regex,
+        '<span style="color: #4B69C6; font-weight: 600;">$1</span>'
+      );
+    });
+    
+    // Highlight JSX tags - Quiet Light theme
+    highlighted = highlighted.replace(
+      /(&lt;\/?)[\w-]+([^&]*?)(&gt;)/g,
+      (match, open, tag, attrs, close) => {
+        let highlightedAttrs = attrs;
+        // Highlight attribute names - Quiet Light theme
+        highlightedAttrs = highlightedAttrs.replace(
+          /(\w+)=/g,
+          '<span style="color: #7A3E9D;">$1</span>='
+        );
+        return `<span style="color: #4B69C6;">${open}${tag}</span>${highlightedAttrs}<span style="color: #4B69C6;">${close}</span>`;
+      }
+    );
+    
+    // Highlight function names - Quiet Light theme
+    highlighted = highlighted.replace(
+      /\b(\w+)\s*(?=\()/g,
+      '<span style="color: #AA3731; font-weight: bold;">$1</span>'
+    );
+  }
+  
+  return highlighted;
+};
+
 export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   code,
   title = 'Generated Code',
@@ -44,60 +116,34 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   });
 
   const handleCopyCode = async () => {
-    console.log('[CODE_DISPLAY] Attempting to copy code to clipboard, length:', code.length);
     try {
       await navigator.clipboard.writeText(code);
-      console.log('[CODE_DISPLAY] Code copied to clipboard successfully');
       setCopySuccess(true);
-      
-      // Reset copy success message after 2 seconds
-      setTimeout(() => {
-        setCopySuccess(false);
-      }, 2000);
+      setTimeout(() => setCopySuccess(false), 2000);
     } catch {
-      console.log('[CODE_DISPLAY] Clipboard API failed, using fallback method');
       // Fallback for browsers that don't support clipboard API
       const textArea = document.createElement('textarea');
       textArea.value = code;
+      textArea.style.position = 'absolute';
+      textArea.style.left = '-9999px';
       document.body.appendChild(textArea);
       textArea.select();
       try {
         document.execCommand('copy');
-        console.log('[CODE_DISPLAY] Code copied using fallback method');
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       } catch {
-        console.error('[CODE_DISPLAY] Fallback copy method also failed');
-        // Fallback copy failed - silently handle error
+        // Fallback copy failed
       }
       document.body.removeChild(textArea);
     }
   };
 
-  const downloadCode = () => {
-    const filename = `generated-component.${language === 'typescript' ? 'tsx' : 'jsx'}`;
-    console.log('[CODE_DISPLAY] Starting code download as:', filename, 'size:', code.length, 'characters');
-    const blob = new Blob([code], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    console.log('[CODE_DISPLAY] Code download initiated successfully');
-  };
-
   const handleDeployAndPreview = async () => {
     try {
-      console.log('[CODE_DISPLAY] Starting deployment process');
       setDeployState({ status: 'deploying', deploymentUrl: '', error: '' });
       
-      // Get Canva user token for authentication
       const token = await auth.getCanvaUserToken();
-      
-      // Generate component and project names
       const componentName = 'GeneratedComponent';
       const projectName = `canva-component-${Date.now().toString(36)}`;
       
@@ -108,7 +154,6 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         framework: 'next' as const,
       };
       
-      console.log('[CODE_DISPLAY] Making deployment request to /api/deploy');
       const response = await fetch('http://localhost:3001/api/deploy', {
         method: 'POST',
         headers: {
@@ -124,7 +169,6 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       }
       
       const data = await response.json();
-      console.log('[CODE_DISPLAY] Deployment successful:', data.deploymentUrl);
       
       setDeployState({
         status: 'deployed',
@@ -132,14 +176,12 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         error: '',
       });
       
-      // Open the deployment URL in a new tab for preview
       if (data.deploymentUrl) {
         await requestOpenExternalUrl({ url: `https://${data.deploymentUrl}` });
       }
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Deployment failed';
-      console.error('[CODE_DISPLAY] Deployment failed:', errorMessage);
       setDeployState({
         status: 'error',
         deploymentUrl: '',
@@ -156,6 +198,9 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     });
   };
 
+  const highlightedCode = highlightCode(code, language);
+  const lineCount = code.split('\n').length;
+
   if (!code) {
     return null;
   }
@@ -163,101 +208,9 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   return (
     <Box padding="2u">
       <Rows spacing="2u">
-        {/* Header */}
-        <Columns alignY="center" spacing="2u">
-          <Column>
-            <Title size="medium">{title}</Title>
-          </Column>
-          <Column width="content">
-            <Columns spacing="1u">
-              <Column width="content">
-                <Button
-                  variant="secondary"
-                  onClick={handleCopyCode}
-                  disabled={!code}
-                >
-                  {copySuccess ? intl.formatMessage({
-                    defaultMessage: "Copied!",
-                    description: "Button text when code is successfully copied"
-                  }) : intl.formatMessage({
-                    defaultMessage: "Copy Code",
-                    description: "Button to copy the generated code"
-                  })}
-                </Button>
-              </Column>
-              <Column width="content">
-                <Button
-                  variant="secondary"
-                  onClick={downloadCode}
-                  disabled={!code}
-                >
-                  {intl.formatMessage({
-                    defaultMessage: "Download",
-                    description: "Button to download the generated code"
-                  })}
-                </Button>
-              </Column>
-              <Column width="content">
-                <Button
-                  variant="primary"
-                  onClick={handleDeployAndPreview}
-                  disabled={!code || deployState.status === 'deploying'}
-                >
-                  {deployState.status === 'deploying' 
-                    ? intl.formatMessage({
-                        defaultMessage: "Deploying...",
-                        description: "Button text while deploying"
-                      })
-                    : intl.formatMessage({
-                        defaultMessage: "Deploy & Preview",
-                        description: "Button to deploy and preview the generated code"
-                      })}
-                </Button>
-              </Column>
-              {onClear && (
-                <Column width="content">
-                  <Button
-                    variant="tertiary"
-                    onClick={onClear}
-                  >
-                    {intl.formatMessage({
-                      defaultMessage: "Clear",
-                      description: "Button to clear the generated code"
-                    })}
-                  </Button>
-                </Column>
-              )}
-              {deployState.status === 'deployed' && (
-                <Column width="content">
-                  <Button
-                    variant="secondary"
-                    onClick={resetDeploy}
-                  >
-                    {intl.formatMessage({
-                      defaultMessage: "Reset Deploy",
-                      description: "Button to reset deployment state"
-                    })}
-                  </Button>
-                </Column>
-              )}
-            </Columns>
-          </Column>
-        </Columns>
 
-        {/* Copy Success Alert */}
-        {copySuccess && (
-          <Alert tone="positive" title={intl.formatMessage({
-            defaultMessage: "Copied!",
-            description: "Alert title when code is copied"
-          })}>
-            {intl.formatMessage({
-              defaultMessage: "Code has been copied to your clipboard.",
-              description: "Success message when code is copied"
-            })}
-          </Alert>
-        )}
 
-        {/* Deployment Success Alert */}
+        {/* Deployment Status Alerts */}
         {deployState.status === 'deployed' && (
           <Alert tone="positive" title={intl.formatMessage({
             defaultMessage: "Deployment Successful!",
@@ -282,7 +235,6 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
           </Alert>
         )}
 
-        {/* Deployment Error Alert */}
         {deployState.status === 'error' && (
           <Alert tone="critical" title={intl.formatMessage({
             defaultMessage: "Deployment Failed",
@@ -307,65 +259,123 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
           </Alert>
         )}
 
-        {/* Code Display */}
+        {/* Code Display Box */}
         <Box 
           border="standard" 
           borderRadius="standard" 
-          background="neutralLow"
-          padding="2u"
+          padding="0"
         >
-          <div style={{ maxHeight: "400px", overflow: "auto" }}>
-            <Scrollable>
-            <Box>
-              <Text size="small" tone="secondary">
-                {intl.formatMessage({
-                  defaultMessage: "Language: {language}",
-                  description: "Label showing the programming language"
-                }, { language: language.toUpperCase() })}
-              </Text>
-              <Box 
-                padding="1u" 
-                background="neutral"
-                borderRadius="standard"
-              >
-                <div
-                  style={{
-                    fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-                    fontSize: '12px',
-                    lineHeight: '1.5',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                  }}
+          {/* Code Header with Copy Button */}
+          <Box 
+            padding="0.5u"
+          >
+            <Columns alignY="center" spacing="1u">
+              <Column>
+                <Columns alignY="center" spacing="0.5u">
+                  <Column width="content">
+                    <div style={{ display: 'flex', alignItems: 'center', height: '16px' }}>
+                      <SquareCode size={14} />
+                    </div>
+                  </Column>
+                  <Column>
+                    <div style={{ display: 'flex', alignItems: 'center', height: '16px' }}>
+                      <Text size="xsmall" tone="secondary">
+                        {intl.formatMessage({
+                          defaultMessage: "{lineCount} lines",
+                          description: "Code line count display"
+                        }, { lineCount })}
+                      </Text>
+                    </div>
+                  </Column>
+                </Columns>
+              </Column>
+              <Column width="content">
+                <Button
+                  variant="tertiary"
+                  onClick={handleCopyCode}
+                  icon={() => copySuccess ? <Check size={16} /> : <Copy size={16} />}
                 >
-                  <pre style={{ margin: 0, padding: 0 }}>
-                    <code>{code}</code>
-                  </pre>
-                </div>
-              </Box>
-            </Box>
-            </Scrollable>
-          </div>
+                  {copySuccess ? intl.formatMessage({
+                    defaultMessage: "Copied!",
+                    description: "Button text when code is successfully copied"
+                  }) : intl.formatMessage({
+                    defaultMessage: "Copy",
+                    description: "Button to copy the generated code"
+                  })}
+                </Button>
+              </Column>
+            </Columns>
+          </Box>
+
+          {/* Code Content */}
+          <Box padding="0">
+            <div
+              style={{
+                backgroundColor: '#F9FAFB', // Updated background color
+                fontFamily: '"Roboto Mono", Consolas, Monaco, "Courier New", monospace',
+                fontSize: '13px',
+                lineHeight: '1.6',
+                overflowX: 'auto',
+                maxHeight: '350px',
+                overflowY: 'auto',
+                padding: '12px'
+              }}
+            >
+              <pre style={{ margin: 0, padding: 0, color: '#333333', fontWeight: '540' }}>
+                <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+              </pre>
+            </div>
+          </Box>
         </Box>
 
-        {/* Code Statistics */}
-        <Columns spacing="2u">
-          <Column>
-            <Text size="small" tone="secondary">
-              {intl.formatMessage({
-                defaultMessage: "Lines: {lineCount}",
-                description: "Number of lines in the code"
-              }, { lineCount: code.split('\n').length })}
-            </Text>
-          </Column>
+        {/* Action Buttons */}
+        <Columns spacing="1u" alignY="center">
           <Column width="content">
-            <Text size="small" tone="secondary">
-              {intl.formatMessage({
-                defaultMessage: "Characters: {charCount}",
-                description: "Number of characters in the code"
-              }, { charCount: code.length })}
-            </Text>
+            <Button
+              variant="primary"
+              onClick={handleDeployAndPreview}
+              disabled={!code || deployState.status === 'deploying'}
+              icon={() => <Upload size={16} />}
+            >
+              {deployState.status === 'deploying' 
+                ? intl.formatMessage({
+                    defaultMessage: "Deploying...",
+                    description: "Button text while deploying"
+                  })
+                : intl.formatMessage({
+                    defaultMessage: "Deploy & Preview",
+                    description: "Button to deploy and preview the generated code"
+                  })}
+            </Button>
           </Column>
+          
+          {deployState.status === 'deployed' && (
+            <Column width="content">
+              <Button
+                variant="secondary"
+                onClick={resetDeploy}
+              >
+                {intl.formatMessage({
+                  defaultMessage: "Reset Deploy",
+                  description: "Button to reset deployment state"
+                })}
+              </Button>
+            </Column>
+          )}
+          
+          {onClear && (
+            <Column width="content">
+              <Button
+                variant="tertiary"
+                onClick={onClear}
+              >
+                {intl.formatMessage({
+                  defaultMessage: "Clear",
+                  description: "Button to clear the generated code"
+                })}
+              </Button>
+            </Column>
+          )}
         </Columns>
 
         {/* Usage Instructions */}
@@ -375,7 +385,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         })}>
           <Text size="small">
             {intl.formatMessage({
-              defaultMessage: "You can copy this code and paste it into your React project, download it as a file, or deploy it directly to Vercel for instant preview. Make sure you have Tailwind CSS configured in your project for the styling to work properly.",
+              defaultMessage: "You can copy this code and paste it into your React project, or deploy it directly to Vercel for instant preview. Make sure you have Tailwind CSS configured in your project for the styling to work properly.",
               description: "Instructions for using the generated code"
             })}
           </Text>

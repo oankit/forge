@@ -401,7 +401,7 @@ root.render(
       
       // Format project name if not provided
       const formattedProjectName = projectName || 
-        `canva-component-${req.canva.userId.substring(0, 8)}-${Date.now().toString(36)}`;
+        `forge-preview-${req.canva.userId.substring(0, 8)}-${Date.now().toString(36)}`;
 
       // Create deployment
       console.log('[DEPLOY] Creating Vercel deployment for project:', formattedProjectName);

@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Rows, Tabs, TabList, Tab, TabPanels, TabPanel, Text } from '@canva/app-ui-kit';
-import { FormattedMessage, useIntl } from 'react-intl';
+import { Rows, Tabs, TabList, Tab, TabPanels, TabPanel, Text, Box } from '@canva/app-ui-kit';
+import { FormattedMessage} from 'react-intl';
 import { AppError } from 'src/components/app_error';
 import { ExportDesign } from 'src/components/export_design';
 import { CodeDisplay } from 'src/components/code_display';
 
 export const GeneratePage = () => {
-  const intl = useIntl();
   const [generatedCode, setGeneratedCode] = useState('');
   const [activeTab, setActiveTab] = useState('export');
 
@@ -24,52 +23,48 @@ export const GeneratePage = () => {
     <Rows spacing="2u">
       <AppError />
       
-      <Tabs defaultActiveId={activeTab}>
-        <TabList align="start" spacing="2u">
+      <Tabs activeId={activeTab}>
+        <TabList align="start" spacing="1u">
           <Tab id="export" onClick={() => setActiveTab('export')}>
-            <Text>
-              <FormattedMessage
-                defaultMessage="Export & Generate Code"
-                description="Tab label for exporting and generating code"
-              />
-            </Text>
+            <FormattedMessage
+              defaultMessage="Export & Generate Code"
+              description="Tab label for exporting and generating code"
+            />
           </Tab>
           <Tab id="code" onClick={() => setActiveTab('code')}>
-            <Text>
-              <FormattedMessage
-                defaultMessage="Generated Code{checkmark}"
-                description="Tab label for generated code with optional checkmark"
-                values={{
-                  checkmark: generatedCode ? ' ✓' : ''
-                }}
-              />
-            </Text>
+            <FormattedMessage
+              defaultMessage="Generated Code{checkmark}"
+              description="Tab label for generated code with optional checkmark"
+              values={{
+                checkmark: generatedCode ? ' ✓' : ''
+              }}
+            />
           </Tab>
         </TabList>
+        
         <TabPanels>
           <TabPanel id="export">
             <ExportDesign onCodeGenerated={handleCodeGenerated} />
           </TabPanel>
+          
           <TabPanel id="code">
             {generatedCode ? (
               <CodeDisplay 
                 code={generatedCode} 
-                title={intl.formatMessage({
-                  defaultMessage: "Generated React Component",
-                  description: "Title for the generated code display"
-                })}
                 language="typescript"
                 onClear={handleClearCode}
               />
             ) : (
-              <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
-                <Text>
-                  <FormattedMessage
-                    defaultMessage="No code generated yet. Use the 'Export & Generate Code' tab to create code from your design."
-                    description="Message shown when no code has been generated yet"
-                  />
-                </Text>
-              </div>
+              <Box padding="3u">
+                <div style={{ textAlign: 'center' }}>
+                  <Text tone="secondary">
+                    <FormattedMessage
+                      defaultMessage="No code generated yet. Use the 'Export & Generate Code' tab to create code from your design."
+                      description="Message shown when no code has been generated yet"
+                    />
+                  </Text>
+                </div>
+              </Box>
             )}
           </TabPanel>
         </TabPanels>
