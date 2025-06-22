@@ -24,17 +24,17 @@ export const GeneratePage = () => {
       <AppError />
       
       <Tabs activeId={activeTab}>
-        <TabList align="start" spacing="1u">
+        <TabList align="stretch" spacing="1u">
           <Tab id="export" onClick={() => setActiveTab('export')}>
             <FormattedMessage
-              defaultMessage="Export & Generate Code"
-              description="Tab label for exporting and generating code"
+              defaultMessage="Generate Code"
+              description="Tab label for generating code"
             />
           </Tab>
           <Tab id="code" onClick={() => setActiveTab('code')}>
             <FormattedMessage
-              defaultMessage="Generated Code{checkmark}"
-              description="Tab label for generated code with optional checkmark"
+              defaultMessage="View Code{checkmark}"
+              description="Tab label for viewing generated code with optional checkmark"
               values={{
                 checkmark: generatedCode ? ' ✓' : ''
               }}
@@ -59,7 +59,7 @@ export const GeneratePage = () => {
                 <div style={{ textAlign: 'center' }}>
                   <Text tone="secondary">
                     <FormattedMessage
-                      defaultMessage="No code generated yet. Use the 'Export & Generate Code' tab to create code from your design."
+                      defaultMessage="No code generated yet. Use the 'Turn into Code' tab to create code from your design."
                       description="Message shown when no code has been generated yet"
                     />
                   </Text>

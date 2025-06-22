@@ -321,7 +321,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
                 padding: '12px'
               }}
             >
-              <pre style={{ margin: 0, padding: 0, color: '#333333', fontWeight: '540' }}>
+              <pre style={{ margin: 0, padding: 0, color: '#333333', fontWeight: '550' }}>
                 <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
               </pre>
             </div>

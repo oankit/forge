@@ -4,20 +4,19 @@ import {
   Box,
   Button,
   Text,
-  Title,
   Rows,
   Columns,
   Column,
   Alert,
-  LoadingIndicator,
   ProgressBar,
   FormField,
   MultilineInput,
-  ImageCard,
+  Title
 } from '@canva/app-ui-kit';
 import { requestExport } from '@canva/design';
 import { auth } from '@canva/user';
 import { useAppContext } from 'src/context';
+import { Code2, Rocket, Brain } from 'lucide-react';
 
 interface ExportDesignProps {
   onCodeGenerated: (code: string) => void;
@@ -210,34 +209,46 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
   return (
     <Box padding="2u">
       <Rows spacing="2u">
-        <Title size="medium">
-          {intl.formatMessage({
-            defaultMessage: "Export Design & Generate Code",
-            description: "Title for the export design section"
-          })}
-        </Title>
-        
-        <Text>
-          {intl.formatMessage({
-            defaultMessage: "Export your current design and generate React component code using AI.",
-            description: "Description for the export functionality"
-          })}
-        </Text>
-
+        <Columns spacing="1u" alignY="start">
+          <Column width="content">
+            <Box paddingTop="0.5u">
+              <Rocket size={16} />
+            </Box>
+          </Column>
+          <Column>
+            <Text>
+              {intl.formatMessage({
+                defaultMessage: "Generate React component code from your current design using AI.",
+                description: "Description for the code generation functionality"
+              })}
+            </Text>
+          </Column>
+        </Columns>
 
 
         {/* Code Generation Prompt */}
         <FormField
-          label={intl.formatMessage({
-            defaultMessage: "Code Generation Instructions (Optional)",
-            description: "Label for code generation prompt input"
-          })}
+          label={
+            <Columns spacing="1u" alignY="start">
+              <Column width="content">
+                <Box paddingTop="0.5u">
+                  <Brain size={16} />
+                </Box>
+              </Column>
+              <Column>
+                {intl.formatMessage({
+                  defaultMessage: "Instructions (Optional)",
+                  description: "Label for code generation prompt input"
+                })}
+              </Column>
+            </Columns>
+          }
           value={codePrompt}
           control={(props) => (
             <MultilineInput
               {...props}
               placeholder={intl.formatMessage({
-                defaultMessage: "Describe how you want the code to be generated (e.g., 'Create a responsive React component with Tailwind CSS')...",
+                defaultMessage: "e.g., Use Tailwind CSS and Flexbox layout",
                 description: "Placeholder for code generation prompt"
               })}
               onChange={setCodePrompt}
@@ -251,15 +262,10 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
         {isLoading && (
           <Box>
             <Rows spacing="1u">
-              <Text size="small">{getStatusMessage()}</Text>
               <ProgressBar value={exportState.progress} />
-              <Columns spacing="1u" alignY="center">
-                <Column>
-                  <Box padding="1u">
-                    <LoadingIndicator size="medium" />
-                  </Box>
-                </Column>
-              </Columns>
+              <Rows align="center" spacing="2u">
+                <Title size="small">{getStatusMessage()}</Title>
+              </Rows>
             </Rows>
           </Box>
         )}
@@ -288,71 +294,45 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
         )}
 
         {/* Action Buttons */}
-        <Columns spacing="2u" alignY="center">
-          <Column width="content">
+        <Rows spacing="1u">
+          {!isLoading && (
             <Button
               variant="primary"
               onClick={handleExportAndGenerate}
-              disabled={isLoading}
+              icon={() => <Code2 size={16} />}
+              stretch={true}
             >
-              {isLoading ? intl.formatMessage({
-                defaultMessage: "Processing...",
-                description: "Button text while processing"
-              }) : intl.formatMessage({
+              {intl.formatMessage({
                 defaultMessage: "Export & Generate Code",
-                description: "Button to start export and code generation"
+                description: "Button to start code generation"
               })}
             </Button>
-          </Column>
+          )}
           
           {(hasError || isCompleted) && (
-            <Column width="content">
-              <Button
-                variant="secondary"
-                onClick={resetExport}
-              >
-                {intl.formatMessage({
-                  defaultMessage: "Start Over",
-                  description: "Button to reset the export process"
-                })}
-              </Button>
-            </Column>
-          )}
-        </Columns>
-
-        {/* Preview of exported image */}
-        {exportState.exportedImageUrl && (
-          <Box>
-            <Text size="small">
-              {intl.formatMessage({
-                defaultMessage: "Exported Design Preview:",
-                description: "Label for exported image preview"
-              })}
-            </Text>
-            <Box 
-              border="standard" 
-              borderRadius="standard" 
-              padding="1u"
+            <Button
+              variant="secondary"
+              onClick={resetExport}
+              stretch={true}
             >
-              <Columns spacing="1u" alignY="center">
-                <Column>
-                  <ImageCard 
-                    thumbnailUrl={exportState.exportedImageUrl} 
-                    alt={intl.formatMessage({
-                      defaultMessage: "Exported design",
-                      description: "Alt text for exported design image"
-                    })}
-                    ariaLabel={intl.formatMessage({
-                      defaultMessage: "Exported design",
-                      description: "Alt text for exported design image"
-                    })}
-                    onClick={() => {}}
-                  />
-                </Column>
-              </Columns>
-            </Box>
-          </Box>
+              {intl.formatMessage({
+                defaultMessage: "Start Over",
+                description: "Button to reset the export process"
+              })}
+            </Button>
+          )}
+        </Rows>
+
+        {/* Helper text below button */}
+        {!isLoading && !isCompleted && !hasError && (
+          <Text size="small" tone="tertiary">
+            {intl.formatMessage({
+              defaultMessage: "A pop-up will ask for export size. Just click 'Export' to continue.",
+              description: "Helper text about the export dialog"
+            })}
+          </Text>
         )}
+
       </Rows>
     </Box>
   );
