@@ -1,32 +1,87 @@
-## Generative AI Template
-
-This template captures best practices for improving user experience in your application.
-
-### State Management
-
-In this template, we've set up state management using `React Context`. It's just one way to do it, not a strict rule. If your app gets more complicated, you might want to check out other options like `Redux` or `MobX`.
-
-### Routing
-
-As your application evolves, you may find the need for routing to manage multiple views or pages. In this template, we've integrated React Router to illustrate how routing can facilitate seamless navigation between various components.
-
-### Loading state
-
-Creating AI assets can be time-consuming, often resulting in users facing extended waiting periods. Incorporating placeholders, a loading bar, and a message indicating the expected wait time can help alleviate the perceived wait time. We highly encourage adopting this approach and customizing it to suit your specific use case.
-
-### Obscenity filter
-
-In this template, we've included a basic obscenity filter to stop users from creating offensive or harmful content. However, you might need additional filters or checks after content generation to ensure it meets your standards.
-
-### Backend
-
-This template includes a simple Express server as a sample backend. Please note that this server is not production-ready, and we advise using it solely for instructional purposes to demonstrate API calls. If you require authentication for your app, we recommend looking at the authentication example provided in the [starter kit](https://github.com/canva-sdks/canva-apps-sdk-starter-kit).
-
-### Thumbnails
-
-This template illustrates how your API could return thumbnails and demonstrates their usage within the code. Thumbnails play a crucial role in optimizing image uploads and previews by providing quick visual feedback and reducing load times.
-
 # Canva AI Code Generator App 🎨🤖
+
+## 📸 App Screenshots & Demo
+
+### Generate Code Tab
+![Generate Code Tab](./assets/Generate%20Code%20Tab.png)
+
+### Code View
+![Code View](./assets/Code%20View.png)
+
+### V0 Build Integration
+![V0 Build](./assets/V0%20Build.png)
+
+### Deployed Build
+![Deployed Build](./assets/Deployed%20build.png)
+
+### Demo Video
+![Seamless Design to Code Workflow](./assets/Seamless%20Design%20to%20Code%20Workflow.mp4)
+
+---
+
+## 🏆 For Judges - Environment Setup
+
+### Quick Start for Testing
+1. Extract the provided `judge-env.7z` file (password provided separately)
+2. Rename `.env.judges` to `.env`
+3. Run `npm start`
+4. Follow the testing instructions in the [Testing Section](#testing)
+
+### Alternative Setup
+If you prefer to use your own API keys:
+1. Copy `.env.template` to `.env`
+2. Obtain API keys from:
+   - [Canva Developer Portal](https://www.canva.dev/)
+   - [Vercel AI Platform](https://vercel.com/ai)
+3. Follow the setup instructions above
+```
+
+#### In Your Submission Package
+```
+submission/
+├── README.md
+├── judge-env.7z (password-protected)
+├── setup-instructions.md
+└── demo-video.mp4 (optional)
+```
+
+### ⚠️ Security Considerations
+
+#### DO:
+- ✅ Use **test/limited API keys**
+- ✅ Create **temporary credentials**
+- ✅ Use **password protection**
+- ✅ Share passwords through **separate channels**
+- ✅ Set **expiration dates** on shared files
+- ✅ **Revoke credentials** after judging period
+
+#### DON'T:
+- ❌ Share production API keys
+- ❌ Include credentials in public repositories
+- ❌ Send passwords in the same email as files
+- ❌ Use permanent/high-limit API keys
+- ❌ Share personal Vercel tokens
+
+### 🎯 Recommended Submission Approach
+
+1. **Create test credentials** with limited scope
+2. **Package in password-protected archive**
+3. **Include clear setup instructions**
+4. **Provide password through separate channel**
+5. **Include fallback instructions** for judges who prefer their own keys
+6. **Plan to revoke** test credentials after judging
+
+### 📞 Support for Judges
+
+Include contact information for technical support:
+
+```markdown
+## 🆘 Need Help?
+
+If you encounter any issues during setup:
+- 📧 Email: omar.ankit2001@gmail.com
+```
+
 
 **Canva AI Agent Challenge Submission**
 
@@ -387,8 +442,14 @@ While the app runs in Canva's desktop editor, test responsive behavior:
 
 ### For Judges and Testers
 
+#### Test Design Available
+For quick testing, you can use this pre-made test design:
+**[Sample UI Components Design](https://www.canva.com/design/DAGrHgCctX0/HbYmffq0eyIf_hwDctlQNQ/edit?utm_content=DAGrHgCctX0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)**
+
+This design contains various UI components perfect for testing the AI code generation features.
+
 1. **Quick Demo Flow**:
-   - Create a simple UI component in Canva (button, card, etc.)
+   - Use the test design above OR create a simple UI component in Canva (button, card, etc.)
    - Open the AI Code Generator app
    - Click "Generate Code" and wait for processing
    - View the generated React component code
@@ -456,6 +517,69 @@ If you encounter issues:
 3. Verify all environment variables are correctly set
 4. Ensure all required API keys are valid and have appropriate permissions
 
+## 🏆 For Judges - Environment Setup
+
+### Quick Start for Testing
+1. Extract the provided `judge-env.7z` file (password provided separately)
+2. Rename `.env.judges` to `.env`
+3. Run `npm start`
+4. Follow the testing instructions in the [Testing Section](#testing)
+
+### Alternative Setup
+If you prefer to use your own API keys:
+1. Copy `.env.template` to `.env`
+2. Obtain API keys from:
+   - [Canva Developer Portal](https://www.canva.dev/)
+   - [Vercel AI Platform](https://vercel.com/ai)
+3. Follow the setup instructions above
+```
+
+#### In Your Submission Package
+```
+submission/
+├── README.md
+├── judge-env.7z (password-protected)
+├── setup-instructions.md
+└── demo-video.mp4 (optional)
+```
+
+### ⚠️ Security Considerations
+
+#### DO:
+- ✅ Use **test/limited API keys**
+- ✅ Create **temporary credentials**
+- ✅ Use **password protection**
+- ✅ Share passwords through **separate channels**
+- ✅ Set **expiration dates** on shared files
+- ✅ **Revoke credentials** after judging period
+
+#### DON'T:
+- ❌ Share production API keys
+- ❌ Include credentials in public repositories
+- ❌ Send passwords in the same email as files
+- ❌ Use permanent/high-limit API keys
+- ❌ Share personal Vercel tokens
+
+### 🎯 Recommended Submission Approach
+
+1. **Create test credentials** with limited scope
+2. **Package in password-protected archive**
+3. **Include clear setup instructions**
+4. **Provide password through separate channel**
+5. **Include fallback instructions** for judges who prefer their own keys
+6. **Plan to revoke** test credentials after judging
+
+### 📞 Support for Judges
+
+Include contact information for technical support:
+
+```markdown
+## 🆘 Need Help?
+
+If you encounter any issues during setup:
+- 📧 Email: omar.ankit2001@gmail.com
+```
+
 ## 🏆 Submission Information
 
 **Repository**: [Your Repository URL]
@@ -470,3 +594,31 @@ If you encounter issues:
 - ✅ Comprehensive error handling
 - ✅ Production-ready deployment pipeline
 - ✅ Extensive testing and documentation
+
+## Generative AI Template
+
+This template captures best practices for improving user experience in your application.
+
+### State Management
+
+In this template, we've set up state management using `React Context`. It's just one way to do it, not a strict rule. If your app gets more complicated, you might want to check out other options like `Redux` or `MobX`.
+
+### Routing
+
+As your application evolves, you may find the need for routing to manage multiple views or pages. In this template, we've integrated React Router to illustrate how routing can facilitate seamless navigation between various components.
+
+### Loading state
+
+Creating AI assets can be time-consuming, often resulting in users facing extended waiting periods. Incorporating placeholders, a loading bar, and a message indicating the expected wait time can help alleviate the perceived wait time. We highly encourage adopting this approach and customizing it to suit your specific use case.
+
+### Obscenity filter
+
+In this template, we've included a basic obscenity filter to stop users from creating offensive or harmful content. However, you might need additional filters or checks after content generation to ensure it meets your standards.
+
+### Backend
+
+This template includes a simple Express server as a sample backend. Please note that this server is not production-ready, and we advise using it solely for instructional purposes to demonstrate API calls. If you require authentication for your app, we recommend looking at the authentication example provided in the [starter kit](https://github.com/canva-sdks/canva-apps-sdk-starter-kit).
+
+### Thumbnails
+
+This template illustrates how your API could return thumbnails and demonstrates their usage within the code. Thumbnails play a crucial role in optimizing image uploads and previews by providing quick visual feedback and reducing load times.
