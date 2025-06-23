@@ -23,63 +23,74 @@ Forge is a AI Design-to-Code Agent, it's an app that transforms Canva designs in
 
 ---
 
+---
+
 ## 🏆 For Judges - Environment Setup
 
 ### Quick Start for Testing
-1. Extract the provided `judge-env.7z` file (password provided separately)
-2. Rename `.env.judges` to `.env`
-3. Run `npm start`
-4. Follow the testing instructions in the [Testing Section](#testing)
+use the ```.env``` file provided
 
-### Alternative Setup
-If you prefer to use your own API keys:
-1. Copy `.env.template` to `.env`
-2. Obtain API keys from:
-   - [Canva Developer Portal](https://www.canva.dev/)
-   - [Vercel AI Platform](https://vercel.com/ai)
-3. Follow the setup instructions above
+### Prerequisites
+- Node.js
+- npm
+- Canva account (required for authentication)
+
+### 1. Clone and Install Dependencies
+
+```bash
+git clone <repository-url>
+cd forge
+npm install
 ```
 
-#### In Your Submission Package
+### 2. Install Canva CLI and Login
+
+```bash
+# Install Canva CLI globally
+npm install -g @canva/cli
+
+# Login to Canva (required - opens browser for authentication)
+canva login
 ```
-submission/
-├── README.md
-├── judge-env.7z (password-protected)
-├── setup-instructions.md
-└── demo-video.mp4 (optional)
+
+
+## 🏃‍♂️ How to Run the System
+
+### Step 1: Start the Development Server
+
+The application includes both frontend and backend servers that start simultaneously:
+
+```bash
+npm start
 ```
 
-### ⚠️ Security Considerations
+This command will:
+- Start the frontend development server at `http://localhost:8080`
+- Start the backend API server at `http://localhost:3001`
+- Enable hot module replacement for faster development
+- Watch for file changes and auto-reload
 
-#### DO:
-- ✅ Use **test/limited API keys**
-- ✅ Create **temporary credentials**
-- ✅ Use **password protection**
-- ✅ Share passwords through **separate channels**
-- ✅ Set **expiration dates** on shared files
-- ✅ **Revoke credentials** after judging period
+**Server Status:**
+- Frontend: `http://localhost:8080` (Webpack dev server)
+- Backend API: `http://localhost:3001` (Express server)
+- Main app source: `src/app.tsx`
+- Backend source: `backend/server.ts`
 
-#### DON'T:
-- ❌ Share production API keys
-- ❌ Include credentials in public repositories
-- ❌ Send passwords in the same email as files
-- ❌ Use permanent/high-limit API keys
-- ❌ Share personal Vercel tokens
+### Step 2: Preview the app
 
-### 🎯 Recommended Submission Approach
+The local development server only exposes a JavaScript bundle, so you can't preview an app by visiting <http://localhost:8080>. You can only preview an app via the Canva editor.
 
-1. **Create test credentials** with limited scope
-2. **Package in password-protected archive**
-3. **Include clear setup instructions**
-4. **Provide password through separate channel**
-5. **Include fallback instructions** for judges who prefer their own keys
-6. **Plan to revoke** test credentials after judging
+To preview an app:
 
-### 📞 Support for Judges
+1. Go to the [Canva Developer Portal](https://www.canva.dev/) and log in
+2. Select **App source > Development URL**
+3. In the **Development URL** field, enter `http://localhost:8080`
+4. Click **Preview**. This opens the Canva editor (and the app) in a new tab
+5. Click **Open**. (This screen only appears when using an app for the first time)
 
-Include contact information for technical support:
+The app will appear in the side panel and you can start testing the AI Design-to-Code functionality.
 
-```markdown
+
 ## 🆘 Need Help?
 
 If you encounter any issues during setup:
