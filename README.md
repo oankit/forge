@@ -26,54 +26,7 @@ Forge is a AI Design-to-Code Agent, it's an app that transforms Canva designs in
 ## 🏆 For Judges - Environment Setup
 
 ### Quick Start for Testing
-1. Extract the provided `judge-env.7z` file (password provided separately)
-2. Rename `.env.judges` to `.env`
-3. Run `npm start`
-4. Follow the testing instructions in the [Testing Section](#testing)
-
-### Alternative Setup
-If you prefer to use your own API keys:
-1. Copy `.env.template` to `.env`
-2. Obtain API keys from:
-   - [Canva Developer Portal](https://www.canva.dev/)
-   - [Vercel AI Platform](https://vercel.com/ai)
-3. Follow the setup instructions above
-```
-
-#### In Your Submission Package
-```
-submission/
-├── README.md
-├── judge-env.7z (password-protected)
-├── setup-instructions.md
-└── demo-video.mp4 (optional)
-```
-
-### ⚠️ Security Considerations
-
-#### DO:
-- ✅ Use **test/limited API keys**
-- ✅ Create **temporary credentials**
-- ✅ Use **password protection**
-- ✅ Share passwords through **separate channels**
-- ✅ Set **expiration dates** on shared files
-- ✅ **Revoke credentials** after judging period
-
-#### DON'T:
-- ❌ Share production API keys
-- ❌ Include credentials in public repositories
-- ❌ Send passwords in the same email as files
-- ❌ Use permanent/high-limit API keys
-- ❌ Share personal Vercel tokens
-
-### 🎯 Recommended Submission Approach
-
-1. **Create test credentials** with limited scope
-2. **Package in password-protected archive**
-3. **Include clear setup instructions**
-4. **Provide password through separate channel**
-5. **Include fallback instructions** for judges who prefer their own keys
-6. **Plan to revoke** test credentials after judging
+use the ```.env``` file provided
 
 ## 🆘 Need Help?
 
