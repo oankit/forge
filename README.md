@@ -102,10 +102,6 @@ To preview an app:
 5. Click **Open**. (This screen only appears when using an app for the first time)
 
 The app will appear in the side panel and you can start testing the AI Design-to-Code functionality.
-
-
-=======
->>>>>>> f55d293b036150c290333ac990086b11aa07cd78
 ## 🆘 Need Help?
 
 If you encounter any issues during setup:
