@@ -28,7 +28,20 @@ Forge is a AI Design-to-Code Agent, it's an app that transforms Canva designs in
 ## 🏆 For Judges - Environment Setup
 
 ### Quick Start for Testing
-use the ```.env``` file provided
+**Note**: The provided `.env` file contains pre-configured app credentials:
+
+```bash
+CANVA_APP_ID=AAGq4x67nJ4
+CANVA_APP_ORIGIN=https://app-aagq4x67nj4.canva-apps.com
+```
+
+**What this means:**
+- These are the unique identifiers for the "Forge" app
+- `CANVA_APP_ID`: The app's unique identifier in Canva's system
+- `CANVA_APP_ORIGIN`: The app's designated origin URL for authentication
+- These values are automatically managed by the Canva CLI and should not be modified
+- Using these credentials allows you to preview the exact same app that was submitted
+- No need to create a new app - you'll be testing the actual submission
 
 ### Prerequisites
 - Node.js
@@ -91,11 +104,12 @@ To preview an app:
 The app will appear in the side panel and you can start testing the AI Design-to-Code functionality.
 
 
+=======
+>>>>>>> f55d293b036150c290333ac990086b11aa07cd78
 ## 🆘 Need Help?
 
 If you encounter any issues during setup:
 - 📧 Email: omar.ankit2001@gmail.com
-```
 
 
 **Canva AI Agent Challenge Submission**
