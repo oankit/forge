@@ -50,13 +50,13 @@ async function generateCodeFromImageDataURL(
   </role>
   
   <task>
-  Analyze the provided design image and generate a complete Next.js page that precisely recreates the design. The output should be a single file containing the page component, ready to be used within a Next.js App Router structure.
+  Analyze the provided design image and generate a complete Next.js page that precisely recreates the design. The output should be a single file containing the page, ready to be used within a Next.js App Router structure.
   </task>
   
   <requirements>
     <framework>
       <name>Next.js 15 using the App Router</name>
-      <component_type>React Server Component marked with 'use client' if client-side interactivity is required</component_type>
+      <component_type>React Server Components marked with 'use client' if client-side interactivity is required</component_type>
     </framework>
     
     <language>
@@ -125,7 +125,7 @@ async function generateCodeFromImageDataURL(
   </design_accuracy>
   
   <output_format>
-    <content>Return ONLY the TypeScript code (.tsx)</content>
+    <content>Return ONLY the code (.tsx)</content>
     <restrictions>
       <no_explanations>Do not include explanations or comments outside code</no_explanations>
       <no_markdown>Do not include markdown formatting outside code</no_markdown>

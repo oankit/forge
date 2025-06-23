@@ -280,6 +280,14 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
                   description: "Description for the code generation functionality"
                 })}
               </Text>
+              <Box paddingTop="1u">
+                <Text tone="secondary" size="small">
+                  {intl.formatMessage({
+                    defaultMessage: "💡 Tip: Works best with single components.",
+                    description: "Hint about code generation working best with single components"
+                  })}
+                </Text>
+              </Box>
             </Column>
           </Columns>
         )}
@@ -307,7 +315,7 @@ export const ExportDesign: React.FC<ExportDesignProps> = ({ onCodeGenerated }) =
               <MultilineInput
                 {...props}
                 placeholder={intl.formatMessage({
-                  defaultMessage: "e.g., Use Tailwind CSS and Flexbox layout",
+                  defaultMessage: "Give more context on what you're building or add specific instructions. e.g., Use Tailwind CSS and Flexbox layout",
                   description: "Placeholder for code generation prompt"
                 })}
                 onChange={setCodePrompt}
