@@ -1,5 +1,9 @@
 # Canva AI Code Generator App 🎨🤖
 
+## 📋 Project Description
+
+The Canva AI Code Generator is an innovative app that transforms Canva designs into production-ready React code using AI. It seamlessly integrates with Vercel's v0 platform to generate, preview, and deploy functional web components directly from your design elements.
+
 ## 📸 App Screenshots & Demo
 
 ### Generate Code Tab
@@ -15,7 +19,7 @@
 ![Deployed Build](./assets/Deployed%20build.png)
 
 ### Demo Video
-![Seamless Design to Code Workflow](./assets/Seamless%20Design%20to%20Code%20Workflow.mp4)
+![Seamless Design to Code Workflow](https://www.tella.tv/video/cmc8awf3400000bia06tnhgw6/edit?status=ModalShare)
 
 ---
 
