@@ -75,16 +75,10 @@ submission/
 5. **Include fallback instructions** for judges who prefer their own keys
 6. **Plan to revoke** test credentials after judging
 
-### 📞 Support for Judges
-
-Include contact information for technical support:
-
-```markdown
 ## 🆘 Need Help?
 
 If you encounter any issues during setup:
 - 📧 Email: omar.ankit2001@gmail.com
-```
 
 
 **Canva AI Agent Challenge Submission**
