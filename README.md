@@ -26,40 +26,129 @@ This template includes a simple Express server as a sample backend. Please note 
 
 This template illustrates how your API could return thumbnails and demonstrates their usage within the code. Thumbnails play a crucial role in optimizing image uploads and previews by providing quick visual feedback and reducing load times.
 
-# Canva App
+# Canva AI Code Generator App 🎨🤖
 
-Welcome to your Canva App! 🎉
+**Canva AI Agent Challenge Submission**
 
-This is a starting point for your app using your chosen template. The complete documentation for the platform is at [canva.dev/docs/apps](https://www.canva.dev/docs/apps/).
+Welcome to the Canva AI Code Generator App! This innovative application allows users to export their Canva designs and generate React component code using AI. Built for the Canva AI Agent Challenge, it demonstrates the power of combining design tools with AI-powered code generation.
+
+## 🌟 Features
+
+### 🎨 Design Export
+- Export current Canva design as PNG or JPG
+- Real-time progress tracking with visual feedback
+- Error handling and user notifications
+- Preview of exported design before code generation
+
+### 🤖 AI Code Generation
+- Generate React TypeScript components from design images
+- Uses Vercel AI SDK with v0-1.0-md model for high-quality code generation
+- Customizable prompts for specific styling requirements
+- Tailwind CSS styling by default
+- Smart hints for optimal single-component generation
+
+### 💻 Code Display & Management
+- Syntax-highlighted code display with Prism.js
+- Copy to clipboard functionality
+- Download generated code as .tsx files
+- Code statistics (lines, characters)
+- Clear usage instructions and tips
+
+### 🚀 Deployment Integration
+- Deploy generated components directly to Vercel
+- Automated deployment pipeline
+- Live preview URLs for generated components
 
 **Note:** This code and documentation assumes some experience with TypeScript and React.
 
-## Requirements
+## 📋 Requirements
 
 - Node.js `v18` or `v20.10.0`
 - npm `v9` or `v10`
+- Canva Developer Account
+- Vercel Account (for AI code generation)
+- Vercel Account with Deploy Token (for deployment features)
 
 **Note:** To make sure you're running the correct version of Node.js, we recommend using a version manager, such as [nvm](https://github.com/nvm-sh/nvm#intro). The [.nvmrc](/.nvmrc) file in the root directory of this repo will ensure the correct version is used once you run `nvm install`.
 
-## Quick start
+## 🚀 Setup Instructions
+
+### 1. Clone and Install Dependencies
 
 ```bash
+git clone <repository-url>
+cd forge
 npm install
 ```
 
-## Running your Canva App
+### 2. Environment Configuration
 
-### Step 1: Start the local development server
+1. Copy the environment template:
+```bash
+cp .env.template .env
+```
 
-To start the boilerplate's development server, run the following command:
+2. Configure the following environment variables in `.env`:
+
+```bash
+# Canva App Configuration
+CANVA_APP_ID=your_canva_app_id
+CANVA_APP_ORIGIN=your_app_origin
+
+# Server Configuration
+CANVA_BACKEND_PORT=3001
+CANVA_FRONTEND_PORT=8080
+CANVA_BACKEND_HOST=http://localhost:3001
+
+# Development Features
+CANVA_HMR_ENABLED=TRUE
+
+# AI Code Generation (Required)
+V0_API_KEY=your_vercel_v0_api_key
+
+# Deployment Features (Optional)
+VERCEL_DEPLOY_TOKEN=your_vercel_deploy_token
+```
+
+### 3. Get Required API Keys
+
+#### Canva Developer Setup:
+1. Visit [Canva Developer Portal](https://www.canva.com/developers/apps)
+2. Create a new app or use existing app
+3. Copy the **App ID** and **App Origin** from your app settings
+4. Get your JWT secret from the app configuration
+
+#### Vercel AI API Key:
+1. Go to [Vercel Account Settings](https://vercel.com/account/tokens)
+2. Create a new token with appropriate permissions
+3. Copy the token as `V0_API_KEY`
+
+#### Vercel Deploy Token (Optional):
+1. In Vercel dashboard, go to Settings > Tokens
+2. Create a new token for deployment
+3. Copy the token as `VERCEL_DEPLOY_TOKEN`
+
+## 🏃‍♂️ How to Run the System
+
+### Step 1: Start the Development Server
+
+The application includes both frontend and backend servers that start simultaneously:
 
 ```bash
 npm start
 ```
 
-The server becomes available at <http://localhost:8080>.
+This command will:
+- Start the frontend development server at `http://localhost:8080`
+- Start the backend API server at `http://localhost:3001`
+- Enable hot module replacement for faster development
+- Watch for file changes and auto-reload
 
-The app's source code is in the `src/app.tsx` file.
+**Server Status:**
+- Frontend: `http://localhost:8080` (Webpack dev server)
+- Backend API: `http://localhost:3001` (Express server)
+- Main app source: `src/app.tsx`
+- Backend source: `backend/server.ts`
 
 ### Step 2: Preview the app
 
@@ -206,3 +295,178 @@ To use ngrok, you'll need to do the following:
    ```
 
 This environment variable is available for the current terminal session, so the command must be re-run for each new session. Alternatively, you can add the variable to your terminal's default parameters.
+
+## 🧪 How to Test the System
+
+### Manual Testing Guide
+
+#### 1. Basic App Functionality
+1. Start the development server (`npm start`)
+2. Open Canva editor and load your app
+3. Verify the app loads without errors
+4. Check that both "Generate Code" and "View Code" tabs are visible
+
+#### 2. Design Export Testing
+1. Create a simple design in Canva (e.g., a button, card, or text element)
+2. Click on the "Generate Code" tab
+3. Verify the export progress indicator appears
+4. Check that the design preview loads correctly
+5. Ensure no error messages appear during export
+
+#### 3. AI Code Generation Testing
+1. After successful design export, the system should automatically generate code
+2. Verify the loading states and progress indicators
+3. Check that the "View Code" tab shows a checkmark when complete
+4. Switch to "View Code" tab to see generated code
+5. Verify syntax highlighting is working
+6. Test the copy-to-clipboard functionality
+7. Test the download functionality
+
+#### 4. Custom Prompt Testing
+1. In the "Generate Code" tab, add custom instructions
+2. Examples to test:
+   - "Use Tailwind CSS with dark theme"
+   - "Make it responsive with mobile-first approach"
+   - "Add hover effects and animations"
+3. Verify the generated code reflects the custom instructions
+
+#### 5. Error Handling Testing
+1. Test with invalid/corrupted designs
+2. Test with very large designs
+3. Test with no internet connection
+4. Verify appropriate error messages are shown
+5. Test recovery after errors
+
+#### 6. API Endpoint Testing
+
+Test the backend API endpoints directly:
+
+```bash
+# Test the generate endpoint (requires valid JWT token)
+curl -X POST http://localhost:3001/api/generate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "imageDataURL": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+    "prompt": "Create a simple button component"
+  }'
+
+# Test the deploy endpoint (optional, requires Vercel token)
+curl -X POST http://localhost:3001/api/deploy \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "code": "export default function Button() { return <button>Click me</button>; }",
+    "componentName": "TestButton"
+  }'
+```
+
+### Performance Testing
+
+1. **Load Testing**: Test with multiple concurrent users
+2. **Large Design Testing**: Test with complex designs (10+ elements)
+3. **Memory Usage**: Monitor browser memory during long sessions
+4. **Network Testing**: Test with slow network connections
+
+### Browser Compatibility Testing
+
+Test the app in different browsers:
+- ✅ Chrome (recommended)
+- ✅ Firefox
+- ✅ Safari (requires HTTPS setup)
+- ✅ Edge
+
+### Mobile Testing
+
+While the app runs in Canva's desktop editor, test responsive behavior:
+1. Use browser dev tools to simulate mobile viewports
+2. Test touch interactions
+3. Verify UI components scale appropriately
+
+## 🎯 Usage Instructions
+
+### For Judges and Testers
+
+1. **Quick Demo Flow**:
+   - Create a simple UI component in Canva (button, card, etc.)
+   - Open the AI Code Generator app
+   - Click "Generate Code" and wait for processing
+   - View the generated React component code
+   - Copy or download the code
+
+2. **Advanced Testing**:
+   - Try complex designs with multiple elements
+   - Test custom prompts for specific styling
+   - Test error scenarios (invalid designs, network issues)
+   - Verify deployment functionality (if Vercel token provided)
+
+3. **Code Quality Assessment**:
+   - Review generated TypeScript code quality
+   - Check for proper component structure
+   - Verify Tailwind CSS usage
+   - Test generated components in a React project
+
+### Best Practices for Optimal Results
+
+1. **Design Recommendations**:
+   - Use single, focused components rather than complex layouts
+   - Ensure good contrast and clear visual hierarchy
+   - Keep designs reasonably sized (not too large or too small)
+
+2. **Prompt Engineering**:
+   - Be specific about styling requirements
+   - Mention framework preferences (Tailwind, styled-components, etc.)
+   - Include accessibility requirements if needed
+   - Specify responsive behavior if required
+
+## 📚 Additional Documentation
+
+- [Export Feature Documentation](./README_EXPORT_FEATURE.md) - In-depth feature documentation
+- [Canva Apps SDK Documentation](https://www.canva.dev/docs/apps/) - Official Canva platform docs
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **App won't load in Canva**:
+   - Check that development server is running
+   - Verify CANVA_APP_ID is correctly set
+   - Ensure app origin matches in Developer Portal
+
+2. **Code generation fails**:
+   - Verify V0_API_KEY is valid and has sufficient credits
+   - Check network connectivity
+   - Try with a simpler design
+
+3. **Export errors**:
+   - Ensure design has exportable elements
+   - Check browser console for detailed error messages
+   - Try refreshing the app
+
+4. **HTTPS issues in Safari**:
+   - Use `npm start --use-https`
+   - Accept the security certificate warning
+   - Update app origin to use HTTPS URL
+
+### Getting Help
+
+If you encounter issues:
+1. Check the browser console for error messages
+2. Review the terminal output for server errors
+3. Verify all environment variables are correctly set
+4. Ensure all required API keys are valid and have appropriate permissions
+
+## 🏆 Submission Information
+
+**Repository**: [Your Repository URL]
+**Live Demo**: Available through Canva Developer Portal
+**Documentation**: This README + additional docs in `/docs` folder
+**Video Demo**: [If applicable]
+
+**Key Features Demonstrated**:
+- ✅ AI-powered code generation from designs
+- ✅ Real-time progress tracking and user feedback
+- ✅ Modern React/TypeScript architecture
+- ✅ Comprehensive error handling
+- ✅ Production-ready deployment pipeline
+- ✅ Extensive testing and documentation
